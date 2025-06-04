@@ -1,29 +1,30 @@
 {
-  "name": "@rbxts/mathparser",
-  "version": "1.0.0",
-  "description": "",
-  "main": "out/init.lua",
-  "scripts": {
-    "build": "rbxtsc",
-    "watch": "rbxtsc -w",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "types": "out/index.d.ts",
-  "files": [
-    "out",
-    "!**/*.tsbuildinfo"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@rbxts/compiler-types": "^3.0.0-types.0",
-    "@rbxts/types": "^1.0.857",
-    "roblox-ts": "^3.0.0",
-    "typescript": "^5.8.3"
-  }
+	"name": "@rbxts/mathparser",
+	"version": "0.1.0",
+	"description": "Math expression parser and evaluator + more for roblox-ts",
+	"main": "out/init.lua",
+	"scripts": {
+		"build": "rbxtsc",
+		"watch": "rbxtsc -w",
+		"prepublishOnly": "npm run build"
+	},
+	"keywords": [],
+	"author": "DaniCatGames",
+	"repository": "github:DaniCatGames/MathParser",
+	"license": "MIT",
+	"type": "commonjs",
+	"types": "out/index.d.ts",
+	"files": [
+		"out",
+		"!**/*.tsbuildinfo"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"devDependencies": {
+		"@rbxts/compiler-types": "^3.0.0-types.0",
+		"@rbxts/types": "^1.0.857",
+		"roblox-ts": "^3.0.0",
+		"typescript": "^5.8.3"
+	}
 }
