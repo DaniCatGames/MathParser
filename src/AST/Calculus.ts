@@ -16,6 +16,8 @@ import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
 import { NodeUtils } from "../Node/NodeUtils";
 import { Evaluator } from "../Solving/Evaluator";
+import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
+import { PolynomialAnalyzer } from "./PolynomialAnalyzer";
 
 
 export class Calculus {
@@ -64,8 +66,32 @@ export class Calculus {
 		return (a - b) / h;
 	}
 
-	static integral(node: Node) {
+	static integral(polynomial: Polynomial, variable: string) {
+		const newIntegralTerms: PolynomialTerm[] = [];
 
+		polynomial.terms.forEach(term => {
+			const power = term.variables.get(variable) || 0;
+			const newPower = power + 1;
+
+			const newVariables = new Map<string, number>();
+			for(const [k, v] of term.variables) {
+				newVariables.set(k, v);
+			}
+			newVariables.set(variable, newPower);
+
+			const newCoeff = BasicNodes.Divide(
+				term.coefficient,
+				BasicNodes.Literal(newPower),
+			);
+
+			newIntegralTerms.push({
+				coefficient: newCoeff,
+				variables: newVariables,
+				degree: term.degree + 1,
+			});
+		});
+
+		return PolynomialAnalyzer.createPolynomial(newIntegralTerms);
 	}
 
 	static numericIntegral(node: Node) {

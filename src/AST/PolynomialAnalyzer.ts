@@ -142,7 +142,7 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	private static createPolynomial(terms: PolynomialTerm[]): Polynomial {
+	static createPolynomial(terms: PolynomialTerm[]): Polynomial {
 		const variables = new Set<string>();
 		let maxDegree = 0;
 
