@@ -87,7 +87,7 @@ export class PolynomialAnalyzer {
 
 		for(const arg of node.args) {
 			if(NodeTests.Literal(arg)) {
-				coefficient = BasicNodes.Multiply();
+				coefficient = BasicNodes.Multiply(coefficient, arg);
 			} else if(NodeTests.Variable(arg)) {
 				const power = variables.get(arg.string) || 0;
 				variables.set(arg.string, power + 1);

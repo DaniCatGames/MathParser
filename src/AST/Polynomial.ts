@@ -154,7 +154,7 @@ export class PolynomialUtils {
 	}
 
 	static Zero() {
-		this.Constant(BasicNodes.Zero());
+		return this.Constant(BasicNodes.Zero());
 	}
 
 	private static CombineTerms(terms: PolynomialTerm[]): PolynomialTerm[] {
