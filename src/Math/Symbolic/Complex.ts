@@ -77,4 +77,8 @@ export class ComplexUtils {
 			},
 		};
 	}
+
+	static zero() {
+		return this.fromNumber(0, 0);
+	}
 }

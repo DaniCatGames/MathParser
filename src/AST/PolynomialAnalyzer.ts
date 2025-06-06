@@ -170,7 +170,7 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	private static isHomogeneous(terms: PolynomialTerm[]): boolean {
+	static isHomogeneous(terms: PolynomialTerm[]): boolean {
 		if(terms.size() === 0) return true;
 		const degree = terms[0].degree;
 		return terms.every(term => term.degree === degree);
@@ -265,7 +265,7 @@ export class PolynomialAnalyzer {
 		return coefficients;
 	}
 
-	private static powerSignature(variables: Map<string, number>) {
+	static powerSignature(variables: Map<string, number>) {
 		const temp = new Map<string, number>();
 		variables.forEach((power, variable) => {
 			temp.set(variable, (temp.get(variable) || 0) + power);

@@ -122,4 +122,8 @@ export class NodeTests {
 	static Tensor(node: Node) {
 		return node.type === NodeType.Tensor;
 	}
+
+	static Zero(node: Node) {
+		return this.Literal(node) && ComplexUtils.equal(node.number, ComplexUtils.zero());
+	}
 }
