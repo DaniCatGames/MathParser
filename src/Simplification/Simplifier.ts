@@ -6,8 +6,8 @@ import { NodeUtils } from "../Node/NodeUtils";
 export class Simplifier {
 	patternMatcher: PatternMatcher;
 
-	constructor() {
-		this.patternMatcher = new PatternMatcher();
+	constructor(matcher?: PatternMatcher) {
+		this.patternMatcher = matcher || new PatternMatcher();
 	}
 
 	simplify(node: Node, rules: SimplificationRule[]): Node {

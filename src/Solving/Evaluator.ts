@@ -16,11 +16,11 @@ export class Evaluator {
 		switch(node.type) {
 			case NodeType.Literal:
 				return node.number.real.numerator / node.number.real.denominator;
-			case NodeType.Constant:
+			case NodeType.Variable:
 				const value = this.variables[node.string];
 				if(!value) {
 					throw new Error(ErrorType.Evaluator, {
-						message: "Unknown constant",
+						message: "Unknown constant or variable",
 						variable: node.string,
 						variables: this.variables,
 					});
@@ -46,16 +46,6 @@ export class Evaluator {
 				return math.pow(this.Numeric(node.args[0]), this.Numeric(node.args[1]));
 			case NodeType.Multiply:
 				return node.args.map(node => this.Numeric(node)).reduce((a, b) => a * b);
-			case NodeType.Variable:
-				const variable = this.variables[node.string];
-				if(!variable) {
-					throw new Error(ErrorType.Evaluator, {
-						message: "Unknown variable",
-						func: node.string,
-						functions: this.variables,
-					});
-				}
-				return variable;
 			case NodeType.Equals:
 				throw new Error(ErrorType.Evaluator, {
 					message: "Equality not supported",

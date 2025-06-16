@@ -4,9 +4,12 @@ import { Node } from "../../Typescript/Node";
 import { BasicNodes } from "../../Node/BasicNodes";
 import { ComplexUtils } from "./Complex";
 
-export interface Function {
+export interface FunctionWithoutDerivative {
 	function: (input: number[]) => number;
 	arguments: number;
+}
+
+export interface Function extends FunctionWithoutDerivative {
 	derivative: (nodes: Node[]) => Node;
 }
 
@@ -180,10 +183,10 @@ export const MathFunctions: { [name: string]: Function } = {
 
 export const PostProcessorFunctions: { [name: string]: (input: Node[]) => Node } = {
 	deg: ([x]) => {
-		return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Literal(180), BasicNodes.Constant("pi")));
+		return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Literal(180), BasicNodes.Variable("pi")));
 	},
 	rad: ([x]) => {
-		return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Constant("pi"), BasicNodes.Literal(180)));
+		return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Variable("pi"), BasicNodes.Literal(180)));
 	},
 	abs: ([x]) => {
 		return BasicNodes.Absolute(x);

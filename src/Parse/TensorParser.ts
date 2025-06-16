@@ -44,8 +44,12 @@ export class TensorParser {
 		if(args.size() > 0) {
 			const firstElement = args[0];
 			if(firstElement.type === PostProcType.Tensor) {
-				const subShape = this.calculateShape((firstElement as PostProcTensor).args);
-				subShape.forEach(x => shape.push(x));
+				if(!firstElement) {
+					shape.push(0);
+				} else {
+					const subShape = this.calculateShape(firstElement.args);
+					subShape.forEach(x => shape.push(x));
+				}
 			}
 		}
 

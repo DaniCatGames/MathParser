@@ -1,7 +1,6 @@
 import {
 	Absolute,
 	Add,
-	Constant,
 	Equals,
 	Exponentiation,
 	Factorial,
@@ -18,18 +17,17 @@ import { Complex } from "./Math";
 
 type NodeByType<T extends NodeType> =
 	T extends NodeType.Literal ? Literal :
-		T extends NodeType.Constant ? Constant :
-			T extends NodeType.Variable ? Variable :
-				T extends NodeType.Add ? Add :
-					T extends NodeType.Multiply ? Multiply :
-						T extends NodeType.Exponentiation ? Exponentiation :
-							T extends NodeType.Absolute ? Absolute :
-								T extends NodeType.Equals ? Equals :
-									T extends NodeType.Function ? Function :
-										T extends NodeType.List ? List :
-											T extends NodeType.Factorial ? Factorial :
-												T extends NodeType.Tensor ? Tensor :
-													Node;
+		T extends NodeType.Variable ? Variable :
+			T extends NodeType.Add ? Add :
+				T extends NodeType.Multiply ? Multiply :
+					T extends NodeType.Exponentiation ? Exponentiation :
+						T extends NodeType.Absolute ? Absolute :
+							T extends NodeType.Equals ? Equals :
+								T extends NodeType.Function ? Function :
+									T extends NodeType.List ? List :
+										T extends NodeType.Factorial ? Factorial :
+											T extends NodeType.Tensor ? Tensor :
+												Node;
 
 export interface DetectionNode<T extends NodeType = NodeType> {
 	readonly type?: T;

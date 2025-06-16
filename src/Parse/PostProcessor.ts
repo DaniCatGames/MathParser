@@ -11,7 +11,7 @@ export function flattenAST(node: Node): Node {
 	function flattenNode(node: Node, parentType?: NodeType): Node[] {
 		if(node.type === parentType && (node.type === NodeType.Add || node.type === NodeType.Multiply)) {
 			return flatMap(node.args, (arg) => flattenNode(arg, node.type));
-		} else if(node.type === NodeType.Variable || node.type === NodeType.Constant || node.type === NodeType.Literal) {
+		} else if(node.type === NodeType.Variable || node.type === NodeType.Literal) {
 			return [node];
 		} else {
 			const args = NodeUtils.getArgs(node);

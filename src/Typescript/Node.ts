@@ -29,11 +29,6 @@ export type Literal = {
 	number: Complex
 }
 
-export type Constant = {
-	type: NodeType.Constant;
-	string: string;
-}
-
 export type Variable = {
 	type: NodeType.Variable;
 	string: string;
@@ -88,7 +83,6 @@ export type Tensor = {
 
 export type Node =
 	Literal
-	| Constant
 	| Variable
 	| Add
 	| Multiply

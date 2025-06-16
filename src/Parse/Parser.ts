@@ -39,7 +39,7 @@ const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
 ]);
 
 export interface ParserConfig {
-	extraFunctions: string[];
+	extraFunctions: string[]; //TODO: implement number of arguments validation
 	extraConstants: string[];
 	plugins: (keyof typeof Plugins)[];
 	maxListSize: number;
@@ -113,11 +113,7 @@ export class Parser {
 		let left: PostProcNode = this.prefix();
 
 		while(precedence < getPrecedence(this.lookahead)) {
-			if(isPostfix(this.lookahead)) {
-				left = this.postfix(left, this.lookahead.type);
-			} else {
-				left = this.mixfix(left, this.lookahead.type);
-			}
+			left = this.mixfix(left, this.lookahead.type);
 		}
 
 		return left;
@@ -186,7 +182,9 @@ export class Parser {
 
 		let loopCounter = 0;
 		const args: PostProcNode[] = [];
+
 		while(this.lookahead.type !== endingType) {
+			loopCounter++;
 			if(loopCounter > this.config.maxListSize) throw new Error(ErrorType.MaxSizeExceeded, {});
 
 			args.push(this.expression());
@@ -194,7 +192,6 @@ export class Parser {
 			if(this.lookahead.type !== argumentSeparator) break;
 
 			this.eat(TokenType.Comma);
-			loopCounter++;
 		}
 
 		this.eat(endingType);
@@ -283,25 +280,13 @@ export class Parser {
 				return postProcBinary(PostProcType.Divide, leftNode, this.expression(newPrecedence));
 			case TokenType.Exponentiation:
 				return postProcBinary(PostProcType.Exponentiation, leftNode, this.expression(newPrecedence - 1));
-		}
-
-		throw new Error(ErrorType.UnknownMixfixToken, {
-			type: token.type,
-			value: token.value,
-		});
-	}
-
-	private postfix(leftNode: PostProcNode, operatorType: TokenType): PostProcNode {
-		const operator = this.eat(operatorType);
-
-		switch(operatorType) {
 			case TokenType.Factorial:
 				return postProcFactorial(leftNode);
 		}
 
 		throw new Error(ErrorType.UnknownMixfixToken, {
-			type: operator.type,
-			value: operator.value,
+			type: token.type,
+			value: token.value,
 		});
 	}
 
@@ -331,10 +316,6 @@ export class Parser {
 			message: message,
 		});
 	}
-}
-
-function isPostfix(token: Token) {
-	return postfixOperators.includes(token.value);
 }
 
 function getPrecedence(token: Token | "unary"): number {

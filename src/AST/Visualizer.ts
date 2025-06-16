@@ -25,7 +25,6 @@ export class Visualizer {
 				if(!FractionUtils.isZero(node.number.real) && !FractionUtils.isZero(node.number.imaginary)) LaTeX = `(${LaTeX})`;
 				LaTeX += "}";
 				return LaTeX;
-			case NodeType.Constant:
 			case NodeType.Variable:
 				return `{${node.string}}`;
 			case NodeType.Add:
@@ -124,7 +123,6 @@ export class Visualizer {
 				if(!FractionUtils.isZero(node.number.real) && !FractionUtils.isZero(node.number.imaginary)) LaTeX = `(${LaTeX})`;
 
 				return LaTeX;
-			case NodeType.Constant:
 			case NodeType.Variable:
 				return `${node.string}`;
 			case NodeType.Add:

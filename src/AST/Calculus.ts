@@ -25,8 +25,6 @@ export class Calculus {
 		switch(node.type) {
 			case NodeType.Literal:
 				return this.literal();
-			case NodeType.Constant:
-				return this.constant();
 			case NodeType.Variable:
 				return this.variable(node, variable);
 			case NodeType.Add:
