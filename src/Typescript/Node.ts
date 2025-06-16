@@ -34,6 +34,11 @@ export type Variable = {
 	string: string;
 }
 
+export type Constant = {
+	type: NodeType.Constant;
+	string: string;
+}
+
 export type Add = {
 	type: NodeType.Add;
 	args: Node[]
@@ -93,3 +98,4 @@ export type Node =
 	| List
 	| Factorial
 	| Tensor
+	| Constant

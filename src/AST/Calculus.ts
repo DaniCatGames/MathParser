@@ -24,7 +24,8 @@ export class Calculus {
 	static derivative(node: Node, variable: string = "x"): Node {
 		switch(node.type) {
 			case NodeType.Literal:
-				return this.literal();
+			case NodeType.Constant:
+				return this.literalOrConstant();
 			case NodeType.Variable:
 				return this.variable(node, variable);
 			case NodeType.Add:
@@ -97,11 +98,7 @@ export class Calculus {
 	}
 
 
-	private static literal() {
-		return BasicNodes.Zero();
-	}
-
-	private static constant() {
+	private static literalOrConstant() {
 		return BasicNodes.Zero();
 	}
 

@@ -2,6 +2,7 @@ import { Error, ErrorType } from "../Typescript/Error";
 import {
 	postProcAbsolute,
 	postProcBinary,
+	postProcConstant,
 	postProcFactorial,
 	postProcFunction,
 	postProcLiteral,
@@ -29,8 +30,6 @@ const operators = new Map<string, number>([
 	["+", 2],
 	["-", 2],
 ]);
-
-const postfixOperators = ["!"];
 
 const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
 	[TokenType.LeftParenthesis, [TokenType.RightParenthesis, TokenType.Comma]],
@@ -210,7 +209,11 @@ export class Parser {
 		if(this.isFunction(this.lookahead.value)) return this.functionExpression();
 
 		const variable = this.eat(TokenType.Identifier);
-		return postProcVariable(variable.value);
+		if(this.constants.has(variable.value)) {
+			return postProcConstant(variable.value);
+		} else {
+			return postProcVariable(variable.value);
+		}
 	}
 
 	private prefix(): PostProcNode {

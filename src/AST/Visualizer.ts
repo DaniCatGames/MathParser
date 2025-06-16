@@ -27,6 +27,8 @@ export class Visualizer {
 				return LaTeX;
 			case NodeType.Variable:
 				return `{${node.string}}`;
+			case NodeType.Constant:
+				return `{\\${node.string}}`;
 			case NodeType.Add:
 				return `{(${node.args.map(arg => this.ToLaTeX(arg)).join("+")})}`;
 			case NodeType.Multiply:
@@ -124,6 +126,7 @@ export class Visualizer {
 
 				return LaTeX;
 			case NodeType.Variable:
+			case NodeType.Constant:
 				return `${node.string}`;
 			case NodeType.Add:
 				return `(${node.args.map(arg => this.ToString(arg)).join("+")})`;

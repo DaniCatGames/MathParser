@@ -17,6 +17,7 @@ export class Evaluator {
 			case NodeType.Literal:
 				return node.number.real.numerator / node.number.real.denominator;
 			case NodeType.Variable:
+			case NodeType.Constant:
 				const value = this.variables[node.string];
 				if(!value) {
 					throw new Error(ErrorType.Evaluator, {

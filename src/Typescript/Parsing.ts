@@ -11,7 +11,8 @@ export enum PostProcType {
 	Variable,
 	List,
 	Absolute,
-	Tensor
+	Tensor,
+	Constant
 }
 
 export enum TokenType {
@@ -86,6 +87,11 @@ export interface PostProcTensor {
 	shape: number[];
 }
 
+export interface PostProcConstant {
+	type: PostProcType.Constant;
+	string: string;
+}
+
 export type PostProcNode =
 	PostProcLiteral
 	| PostProcBinary
@@ -96,3 +102,4 @@ export type PostProcNode =
 	| PostProcFactorial
 	| PostProcAbsolute
 	| PostProcTensor
+	| PostProcConstant

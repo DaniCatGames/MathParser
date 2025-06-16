@@ -60,12 +60,12 @@ export class NodeTests {
 		return node.type === NodeType.Literal;
 	}
 
-	static Constant(node: Node) {
-		return node.type === NodeType.Constant;
-	}
-
 	static Variable(node: Node) {
 		return node.type === NodeType.Variable;
+	}
+
+	static Constant(node: Node) {
+		return node.type === NodeType.Constant;
 	}
 
 	static Operator(node: Node) {

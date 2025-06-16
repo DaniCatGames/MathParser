@@ -1,5 +1,6 @@
 import {
 	PostProcAbsolute,
+	PostProcConstant,
 	PostProcFactorial,
 	PostProcFunction,
 	PostProcLiteral,
@@ -53,6 +54,13 @@ export function postProcFunction(func: string, args: PostProcNode[]): PostProcFu
 export function postProcVariable(name: string): PostProcVariable {
 	return {
 		type: PostProcType.Variable,
+		string: name,
+	};
+}
+
+export function postProcConstant(name: string): PostProcConstant {
+	return {
+		type: PostProcType.Constant,
 		string: name,
 	};
 }

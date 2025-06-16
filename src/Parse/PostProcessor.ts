@@ -11,7 +11,7 @@ export function flattenAST(node: Node): Node {
 	function flattenNode(node: Node, parentType?: NodeType): Node[] {
 		if(node.type === parentType && (node.type === NodeType.Add || node.type === NodeType.Multiply)) {
 			return flatMap(node.args, (arg) => flattenNode(arg, node.type));
-		} else if(node.type === NodeType.Variable || node.type === NodeType.Literal) {
+		} else if(node.type === NodeType.Variable || node.type === NodeType.Literal || node.type === NodeType.Constant) {
 			return [node];
 		} else {
 			const args = NodeUtils.getArgs(node);
@@ -57,6 +57,8 @@ export function postProcess(node: PostProcNode): Node {
 			return BasicNodes.Literal(node.number);
 		case PostProcType.Variable:
 			return BasicNodes.Variable(node.string);
+		case PostProcType.Constant:
+			return BasicNodes.Constant(node.string);
 		case PostProcType.Absolute:
 			return BasicNodes.Absolute(postProcess(node.args[0]));
 		case PostProcType.Tensor:

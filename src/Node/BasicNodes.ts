@@ -1,6 +1,7 @@
 import {
 	Absolute,
 	Add,
+	Constant,
 	Equals,
 	Exponentiation,
 	Factorial,
@@ -43,6 +44,13 @@ export class BasicNodes {
 	static Variable(variable: string): Variable {
 		return {
 			type: NodeType.Variable,
+			string: variable,
+		};
+	}
+
+	static Constant(variable: string): Constant {
+		return {
+			type: NodeType.Constant,
 			string: variable,
 		};
 	}
