@@ -17,7 +17,7 @@ export class TensorParser {
 
 		for(const arg of args) {
 			if(arg.type === PostProcType.Tensor) {
-				const subFlattened = this.flattenTensor((arg as PostProcTensor).data);
+				const subFlattened = this.flattenTensor((arg as PostProcTensor).args);
 				subFlattened.forEach(x => flattened.push(x));
 			} else {
 				flattened.push(arg);
@@ -44,7 +44,7 @@ export class TensorParser {
 		if(args.size() > 0) {
 			const firstElement = args[0];
 			if(firstElement.type === PostProcType.Tensor) {
-				const subShape = this.calculateShape((firstElement as PostProcTensor).data);
+				const subShape = this.calculateShape((firstElement as PostProcTensor).args);
 				subShape.forEach(x => shape.push(x));
 			}
 		}
@@ -64,7 +64,7 @@ export class TensorParser {
 		return args.every(arg => {
 			if(arg.type !== PostProcType.Tensor) return false;
 			return this.validateTensorShape(
-				(arg as PostProcTensor).data,
+				(arg as PostProcTensor).args,
 				expectedShape,
 				currentDepth + 1,
 			);

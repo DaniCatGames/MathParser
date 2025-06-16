@@ -19,14 +19,8 @@ export class NodeUtils {
 		return "number" in node;
 	}
 
-	static hasData(node: Node) {
-		return "data" in node;
-	}
-
-	static getData(node: Node) {
-		if(this.hasData(node)) {
-			return node.data;
-		} else if(this.hasArgs(node)) {
+	static getArgs(node: Node) {
+		if(this.hasArgs(node)) {
 			return node.args;
 		} else {
 			return undefined;
@@ -54,15 +48,6 @@ export class NodeUtils {
 				if(!this.equal(a.args[i], b.args[i])) return false;
 			}
 		} else if(this.hasArgs(a) !== this.hasArgs(b)) {
-			return false;
-		}
-
-		if(this.hasData(a) && this.hasData(b)) {
-			if(a.data.size() !== b.data.size()) return false;
-			for(let i = 0; i < a.data.size(); i++) {
-				if(!this.equal(a.data[i], b.data[i])) return false;
-			}
-		} else if(this.hasData(a) !== this.hasData(b)) {
 			return false;
 		}
 

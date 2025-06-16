@@ -29,8 +29,6 @@ export class PatternMatcher {
 				result = this.findPartialMatches(node, pattern);
 			} else if("args" in node) {
 				result.matchedIndices = this.getIndicesArray(node.args.size());
-			} else if("data" in node) {
-				result.matchedIndices = this.getIndicesArray(node.data.size());
 			}
 
 			if(result.matched && result.specialNodes) {

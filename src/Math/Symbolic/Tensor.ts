@@ -53,7 +53,7 @@ export class TensorUtils {
 	static getElement(tensor: Tensor, indices: number[]): Node | undefined {
 		try {
 			const flatIndex = this.indicesToFlatIndex(indices, tensor.shape);
-			return tensor.data[flatIndex];
+			return tensor.args[flatIndex];
 		} catch {
 			return undefined;
 		}
@@ -62,7 +62,7 @@ export class TensorUtils {
 	static setElement(tensor: Tensor, indices: number[], value: Node): boolean {
 		try {
 			const flatIndex = this.indicesToFlatIndex(indices, tensor.shape);
-			tensor.data[flatIndex] = value;
+			tensor.args[flatIndex] = value;
 			return true;
 		} catch {
 			return false;
@@ -81,7 +81,7 @@ export class TensorUtils {
 			newSize: newTotal,
 		});
 
-		return BasicNodes.Tensor([...tensor.data], [...shape]);
+		return BasicNodes.Tensor([...tensor.args], [...shape]);
 	};
 
 	static shapeToString(shape: number[]): string {
@@ -106,12 +106,12 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
-		for(let i = 0; i < a.data.size(); i++) {
-			resultData.push(BasicNodes.Add(a.data[i], b.data[i]));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < a.args.size(); i++) {
+			resultArgs.push(BasicNodes.Add(a.args[i], b.args[i]));
 		}
 
-		return BasicNodes.Tensor(resultData, [...a.shape]);
+		return BasicNodes.Tensor(resultArgs, [...a.shape]);
 	}
 
 	static elementSubtract(a: Tensor, b: Tensor): Tensor {
@@ -123,12 +123,12 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
-		for(let i = 0; i < a.data.size(); i++) {
-			resultData.push(BasicNodes.Subtract(a.data[i], b.data[i]));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < a.args.size(); i++) {
+			resultArgs.push(BasicNodes.Subtract(a.args[i], b.args[i]));
 		}
 
-		return BasicNodes.Tensor(resultData, [...a.shape]);
+		return BasicNodes.Tensor(resultArgs, [...a.shape]);
 	}
 
 	static elementMultiply(a: Tensor, b: Tensor): Tensor {
@@ -140,12 +140,12 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
-		for(let i = 0; i < a.data.size(); i++) {
-			resultData.push(BasicNodes.Multiply(a.data[i], b.data[i]));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < a.args.size(); i++) {
+			resultArgs.push(BasicNodes.Multiply(a.args[i], b.args[i]));
 		}
 
-		return BasicNodes.Tensor(resultData, [...a.shape]);
+		return BasicNodes.Tensor(resultArgs, [...a.shape]);
 	}
 
 	static elementDivide(a: Tensor, b: Tensor): Tensor {
@@ -157,21 +157,21 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
-		for(let i = 0; i < a.data.size(); i++) {
-			resultData.push(BasicNodes.Divide(a.data[i], b.data[i]));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < a.args.size(); i++) {
+			resultArgs.push(BasicNodes.Divide(a.args[i], b.args[i]));
 		}
 
-		return BasicNodes.Tensor(resultData, [...a.shape]);
+		return BasicNodes.Tensor(resultArgs, [...a.shape]);
 	}
 
 	static scalarMultiply(tensor: Tensor, scalar: Tensor): Tensor {
-		const resultData: Node[] = [];
-		for(let i = 0; i < tensor.data.size(); i++) {
-			resultData.push(BasicNodes.Multiply(tensor.data[i], scalar));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < tensor.args.size(); i++) {
+			resultArgs.push(BasicNodes.Multiply(tensor.args[i], scalar));
 		}
 
-		return BasicNodes.Tensor(resultData, [...tensor.shape]);
+		return BasicNodes.Tensor(resultArgs, [...tensor.shape]);
 	}
 
 	static matrixMultiplication(a: Tensor, b: Tensor): Tensor {
@@ -194,7 +194,7 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
+		const resultArgs: Node[] = [];
 		const resultShape = [rowsA, colsB];
 
 
@@ -206,18 +206,18 @@ export class TensorUtils {
 					const aIndex = i * colsA + k;
 					const bIndex = k * colsB + j;
 
-					terms.push(BasicNodes.Multiply(a.data[aIndex], b.data[bIndex]));
+					terms.push(BasicNodes.Multiply(a.args[aIndex], b.args[bIndex]));
 				}
 
 				if(terms.size() === 1) {
-					resultData.push(terms[0]);
+					resultArgs.push(terms[0]);
 				} else {
-					resultData.push(BasicNodes.Add(...terms));
+					resultArgs.push(BasicNodes.Add(...terms));
 				}
 			}
 		}
 
-		return BasicNodes.Tensor(resultData, resultShape);
+		return BasicNodes.Tensor(resultArgs, resultShape);
 	}
 
 	static vectorDot(a: Tensor, b: Tensor): Node {
@@ -237,21 +237,21 @@ export class TensorUtils {
 			});
 		}
 
-		const resultData: Node[] = [];
-		for(let i = 0; i < a.data.size(); i++) {
-			resultData.push(BasicNodes.Multiply(a.data[i], b.data[i]));
+		const resultArgs: Node[] = [];
+		for(let i = 0; i < a.args.size(); i++) {
+			resultArgs.push(BasicNodes.Multiply(a.args[i], b.args[i]));
 		}
 
-		if(resultData.size() === 1) {
-			return resultData[0];
+		if(resultArgs.size() === 1) {
+			return resultArgs[0];
 		} else {
-			return BasicNodes.Add(...resultData);
+			return BasicNodes.Add(...resultArgs);
 		}
 	}
 
 	static transpose(tensor: Tensor, axes?: number[]): Tensor {
 		if(tensor.shape.size() === 0) {
-			return BasicNodes.Tensor([...tensor.data], [...tensor.shape]);
+			return BasicNodes.Tensor([...tensor.args], [...tensor.shape]);
 		}
 
 		if(axes === undefined) {
@@ -291,7 +291,7 @@ export class TensorUtils {
 		}
 
 		const newShape: number[] = [];
-		const newData: Node[] = [];
+		const newArgs: Node[] = [];
 		const totalElements = this.getTotalElements(tensor);
 
 		for(let i = 0; i < tensor.shape.size(); i++) {
@@ -320,49 +320,49 @@ export class TensorUtils {
 				});
 			}
 
-			newData.push(element);
+			newArgs.push(element);
 		}
 
-		return BasicNodes.Tensor(newData, newShape);
+		return BasicNodes.Tensor(newArgs, newShape);
 	}
 
 	static identityMatrix(size: number): Tensor {
-		const resultData: Node[] = [];
+		const resultArgs: Node[] = [];
 		const shape = [size, size];
 
 		for(let i = 0; i < size; i++) {
 			for(let j = 0; j < size; j++) {
 				if(i === j) {
-					resultData.push(BasicNodes.One());
+					resultArgs.push(BasicNodes.One());
 				} else {
-					resultData.push(BasicNodes.Zero());
+					resultArgs.push(BasicNodes.Zero());
 				}
 			}
 		}
 
-		return BasicNodes.Tensor(resultData, shape);
+		return BasicNodes.Tensor(resultArgs, shape);
 	}
 
 	static zeros(shape: number[]): Tensor {
 		const totalElements = this.shapeToTotalElements(shape);
-		const resultData: Node[] = [];
+		const resultArgs: Node[] = [];
 
 		for(let i = 0; i < totalElements; i++) {
-			resultData.push(BasicNodes.Zero());
+			resultArgs.push(BasicNodes.Zero());
 		}
 
-		return BasicNodes.Tensor(resultData, shape);
+		return BasicNodes.Tensor(resultArgs, shape);
 	}
 
 	static ones(shape: number[]): Tensor {
 		const totalElements = this.shapeToTotalElements(shape);
-		const resultData: Node[] = [];
+		const resultArgs: Node[] = [];
 
 		for(let i = 0; i < totalElements; i++) {
-			resultData.push(BasicNodes.One());
+			resultArgs.push(BasicNodes.One());
 		}
 
-		return BasicNodes.Tensor(resultData, shape);
+		return BasicNodes.Tensor(resultArgs, shape);
 	}
 
 	static isVector(tensor: Tensor) {

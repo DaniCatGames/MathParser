@@ -241,15 +241,15 @@ export class Calculus {
 	}
 
 	private static list(node: List, variable: string): Node {
-		const derivativeArgs = node.data.map(arg => this.derivative(arg, variable));
+		const derivativeArgs = node.args.map(arg => this.derivative(arg, variable));
 
 		return BasicNodes.List(...derivativeArgs);
 	}
 
 	private static tensor(node: Tensor, variable: string): Node {
-		const derivativeData = node.data.map(element => this.derivative(element, variable));
+		const args = node.args.map(element => this.derivative(element, variable));
 
-		return BasicNodes.Tensor(derivativeData, node.shape);
+		return BasicNodes.Tensor(args, node.shape);
 	}
 
 	private static isZero(node: Node) {

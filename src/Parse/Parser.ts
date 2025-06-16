@@ -140,19 +140,19 @@ export class Parser {
 	}
 
 	private tensorExpression(): PostProcTensor {
-		const data = this.seperatedExpression(TokenType.LeftSquareBracket);
+		const args = this.seperatedExpression(TokenType.LeftSquareBracket);
 
-		const classification = TensorParser.classifyArrayStructure(data);
+		const classification = TensorParser.classifyArrayStructure(args);
 
 		switch(classification) {
 			case "Vector":
-				return postProcVector(data);
+				return postProcVector(args);
 			case "Matrix":
-				const matrixStructure = TensorParser.analyzeTensorStructure(data);
-				return postProcMatrix(TensorParser.flattenTensor(data), matrixStructure.shape[0], matrixStructure.shape[1]);
+				const matrixStructure = TensorParser.analyzeTensorStructure(args);
+				return postProcMatrix(TensorParser.flattenTensor(args), matrixStructure.shape[0], matrixStructure.shape[1]);
 			case "Tensor":
-				const tensorStructure = TensorParser.analyzeTensorStructure(data);
-				return postProcTensor(TensorParser.flattenTensor(data), tensorStructure.shape);
+				const tensorStructure = TensorParser.analyzeTensorStructure(args);
+				return postProcTensor(TensorParser.flattenTensor(args), tensorStructure.shape);
 			case "Invalid":
 				throw new Error(ErrorType.TypeError, {message: "Invalid Tensor Structure"});
 		}

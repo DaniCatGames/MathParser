@@ -77,13 +77,13 @@ export type Factorial = {
 
 export type List = {
 	type: NodeType.List;
-	data: Node[]
+	args: Node[]
 }
 
 export type Tensor = {
 	type: NodeType.Tensor;
 	shape: number[];
-	data: Node[]
+	args: Node[]
 }
 
 export type Node =

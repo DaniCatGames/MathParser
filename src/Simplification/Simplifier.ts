@@ -34,12 +34,6 @@ export class Simplifier {
 				...node,
 				args: simplifiedArgs,
 			};
-		} else if(NodeUtils.hasData(node)) {
-			const simplifiedData = node.data.map((data) => this.simplify(data, rules));
-			return {
-				...node,
-				data: simplifiedData,
-			};
 		} else {
 			return node;
 		}

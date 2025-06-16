@@ -82,7 +82,7 @@ export interface PostProcAbsolute {
 
 export interface PostProcTensor {
 	type: PostProcType.Tensor;
-	data: PostProcNode[];
+	args: PostProcNode[];
 	shape: number[];
 }
 

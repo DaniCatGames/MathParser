@@ -33,7 +33,7 @@ export class Visualizer {
 			case NodeType.Multiply:
 				return `{(${node.args.map(arg => this.ToLaTeX(arg)).join("\\cdot")})}`;
 			case NodeType.List:
-				return `{\\{${node.data.map(arg => this.ToLaTeX(arg)).join(", ")}\\}}`;
+				return `{\\{${node.args.map(arg => this.ToLaTeX(arg)).join(", ")}\\}}`;
 			case NodeType.Tensor:
 				if(TensorUtils.isTensor(node)) {
 					throw new Error(ErrorType.Visualizer, {
@@ -132,10 +132,10 @@ export class Visualizer {
 			case NodeType.Multiply:
 				return `(${node.args.map(arg => this.ToString(arg)).join("*")})`;
 			case NodeType.List:
-				return `{${node.data.map(arg => this.ToString(arg)).join(", ")}}`;
+				return `{${node.args.map(arg => this.ToString(arg)).join(", ")}}`;
 			case NodeType.Tensor:
 				if(TensorUtils.isVector(node)) {
-					return `[${node.data.map(arg => this.ToString(arg)).join(", ")}]`;
+					return `[${node.args.map(arg => this.ToString(arg)).join(", ")}]`;
 				} else {
 					let indexOffset = 1;
 					for(let i = 0; i < node.shape.size(); i++) {
@@ -145,11 +145,11 @@ export class Visualizer {
 					let tensor = `[`;
 
 					for(let j = 0; j < node.shape[0]; j++) {
-						const data = slice(node.data, j * indexOffset, (j + 1) * indexOffset);
+						const args = slice(node.args, j * indexOffset, (j + 1) * indexOffset);
 						const newShape = [...node.shape];
 						newShape.remove(0);
 
-						tensor += this.ToString(BasicNodes.Tensor(data, newShape));
+						tensor += this.ToString(BasicNodes.Tensor(args, newShape));
 						if(j !== node.shape[0] - 1) tensor += ", ";
 					}
 

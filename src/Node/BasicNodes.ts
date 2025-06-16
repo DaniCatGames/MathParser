@@ -129,30 +129,30 @@ export class BasicNodes {
 	static List(...args: Node[]): List {
 		return {
 			type: NodeType.List,
-			data: args,
+			args: args,
 		};
 	}
 
-	static Vector(...data: Node[]): Tensor {
+	static Vector(...args: Node[]): Tensor {
 		return {
 			type: NodeType.Tensor,
-			data: data,
-			shape: [data.size()],
+			args: args,
+			shape: [args.size()],
 		};
 	}
 
-	static Matrix(data: Node[], rows: number, cols: number): Tensor {
+	static Matrix(args: Node[], rows: number, cols: number): Tensor {
 		return {
 			type: NodeType.Tensor,
-			data: data,
+			args: args,
 			shape: [rows, cols],
 		};
 	}
 
-	static Tensor(data: Node[], shape: number[]): Tensor {
+	static Tensor(args: Node[], shape: number[]): Tensor {
 		return {
 			type: NodeType.Tensor,
-			data: data,
+			args: args,
 			shape: shape,
 		};
 	}

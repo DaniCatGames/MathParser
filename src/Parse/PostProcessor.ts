@@ -14,23 +14,16 @@ export function flattenAST(node: Node): Node {
 		} else if(node.type === NodeType.Variable || node.type === NodeType.Constant || node.type === NodeType.Literal) {
 			return [node];
 		} else {
-			const args = NodeUtils.getData(node);
+			const args = NodeUtils.getArgs(node);
 			if(!args) throw new Error(ErrorType.Parser, {
 				message: "node does not have arguments",
 			});
 			const newArgs = flatMap(args, (arg) => flattenNode(arg, node.type));
 
-			if(NodeUtils.hasArgs(node)) {
-				return [{
-					...node,
-					args: newArgs,
-				}];
-			} else {
-				return [{
-					...node,
-					data: newArgs,
-				}];
-			}
+			return [{
+				...node,
+				args: newArgs,
+			}];
 		}
 	}
 
@@ -67,7 +60,7 @@ export function postProcess(node: PostProcNode): Node {
 		case PostProcType.Absolute:
 			return BasicNodes.Absolute(postProcess(node.args[0]));
 		case PostProcType.Tensor:
-			return BasicNodes.Tensor(node.data.map(arg => postProcess(arg)), node.shape);
+			return BasicNodes.Tensor(node.args.map(arg => postProcess(arg)), node.shape);
 	}
 }
 
@@ -75,16 +68,11 @@ export function complexLiterals(node: Node): Node {
 	if(node.type === NodeType.Variable && node.string === "i") {
 		return BasicNodes.Literal(ComplexUtils.fromNumbers(0, 1, 1, 1));
 	} else {
-		const args = NodeUtils.getData(node);
+		const args = NodeUtils.getArgs(node);
 		if(args !== undefined && NodeUtils.hasArgs(node)) {
 			return {
 				...node,
 				args: args.map(arg => complexLiterals(arg)),
-			};
-		} else if(args !== undefined && NodeUtils.hasData(node)) {
-			return {
-				...node,
-				data: args.map(arg => complexLiterals(arg)),
 			};
 		} else {
 			return node;

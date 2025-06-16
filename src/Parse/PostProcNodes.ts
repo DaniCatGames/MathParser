@@ -64,26 +64,26 @@ export function postProcAbsolute(node: PostProcNode): PostProcAbsolute {
 	};
 }
 
-export function postProcVector(data: PostProcNode[]): PostProcTensor {
+export function postProcVector(args: PostProcNode[]): PostProcTensor {
 	return {
 		type: PostProcType.Tensor,
-		data: data,
-		shape: [data.size()],
+		args: args,
+		shape: [args.size()],
 	};
 }
 
-export function postProcMatrix(data: PostProcNode[], rows: number, cols: number): PostProcTensor {
+export function postProcMatrix(args: PostProcNode[], rows: number, cols: number): PostProcTensor {
 	return {
 		type: PostProcType.Tensor,
-		data: data,
+		args: args,
 		shape: [rows, cols],
 	};
 }
 
-export function postProcTensor(data: PostProcNode[], shape: number[]): PostProcTensor {
+export function postProcTensor(args: PostProcNode[], shape: number[]): PostProcTensor {
 	return {
 		type: PostProcType.Tensor,
-		data: data,
+		args: args,
 		shape: shape,
 	};
 }
