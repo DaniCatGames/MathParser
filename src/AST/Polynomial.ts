@@ -5,7 +5,6 @@ import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
 import { Error, ErrorType } from "../Typescript/Error";
 import { flattenAST } from "../Parse/PostProcessor";
 import { NodeTests } from "../Node/NodeUtils";
-import { Calculus } from "./Calculus";
 
 export class PolynomialUtils {
 	static Add(poly1: Polynomial, poly2: Polynomial) {
@@ -123,8 +122,48 @@ export class PolynomialUtils {
 	}
 
 	static Derivative(poly: Polynomial, variable: string = "x") {
-		const node = this.ToNode(poly);
-		return PolynomialAnalyzer.parse(Calculus.derivative(node, variable));
+		const terms: PolynomialTerm[] = [];
+
+		poly.terms.forEach(term => {
+			const derivative = this.TermDerivative(term, variable);
+			if(derivative) terms.push(derivative);
+		});
+
+		return PolynomialAnalyzer.createPolynomial(terms);
+	}
+
+	private static TermDerivative(term: PolynomialTerm, variable: string): PolynomialTerm | undefined {
+		const newVariables = new Map<string, number>;
+		let coeff = term.coefficient;
+
+		let hasVar = false;
+
+		term.variables.forEach((power, vari) => {
+			if(vari === variable) {
+				coeff = BasicNodes.Divide(
+					coeff,
+					BasicNodes.Literal(power),
+				);
+
+				if(power > 1) newVariables.set(vari, power - 1);
+				hasVar = true;
+			} else {
+				newVariables.set(vari, power);
+			}
+		});
+
+		let degree = 0;
+		newVariables.forEach(power => degree += power);
+
+		if(hasVar) {
+			return {
+				coefficient: coeff,
+				variables: newVariables,
+				degree: degree,
+			};
+		} else {
+			return undefined;
+		}
 	}
 
 	static ToNode(poly: Polynomial) {
