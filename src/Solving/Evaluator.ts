@@ -4,10 +4,10 @@ import { Error, ErrorType } from "../Typescript/Error";
 import { GammaFunction } from "../Math/FloatingPoint/Gamma";
 
 export class Evaluator {
-	private readonly functions: { [name: string]: Function } = {};
-	private readonly variables: { [key: string]: number } = {};
+	private readonly functions: Function[];
+	private readonly variables: { [key: string]: number };
 
-	constructor(functions: { [name: string]: Function }, variables: { [key: string]: number }) {
+	constructor(functions: Function[], variables: { [key: string]: number }) {
 		this.functions = functions;
 		this.variables = variables;
 	}
@@ -34,7 +34,8 @@ export class Evaluator {
 			case NodeType.Factorial:
 				return GammaFunction.gamma(this.Numeric(node.args[0]));
 			case NodeType.Function:
-				const func = this.functions[node.string];
+				let func = this.functions.find(fn => fn.names.includes(node.string));
+
 				if(!func) {
 					throw new Error(ErrorType.Evaluator, {
 						message: "Unknown function",
@@ -61,11 +62,19 @@ export class Evaluator {
 
 
 
-	setVariable(variable: string, value: number): void {
+	setVariable(variable: string, value: number) {
 		this.variables[variable] = value;
 	}
 
-	setFunction(name: string, func: Function): void {
-		this.functions[name] = func;
+	addFunction(fn: Function) {
+		this.functions.push(fn);
+	}
+
+	removeFunction(fn: string) {
+		const func = this.functions.find(value => value.names.includes(fn));
+		if(!func) return false;
+
+		this.functions.remove(this.functions.indexOf(func));
+		return true;
 	}
 }

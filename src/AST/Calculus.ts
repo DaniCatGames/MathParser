@@ -11,7 +11,7 @@ import {
 	Tensor,
 	Variable,
 } from "../Typescript/Node";
-import { MathFunctions } from "../Math/Symbolic/MathFunctions";
+import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
 import { NodeUtils } from "../Node/NodeUtils";
@@ -211,7 +211,12 @@ export class Calculus {
 				return BasicNodes.Zero();
 			}
 
-			const mathFunction = MathFunctions[node.string];
+			let mathFunction: ExtraFunctionTypeBecauseOfStupidImports | undefined;
+
+			MathFunctions.forEach(fn => {
+				if(fn.names.includes(node.string)) mathFunction = fn;
+			});
+
 			if(!mathFunction) {
 				throw new Error(ErrorType.Derivative, {
 					message: "Function not found or implemented",

@@ -1,13 +1,13 @@
 import { Function } from "../Math/Symbolic/MathFunctions";
 
 interface Plugin {
-	functions: { [key: string]: Function };
+	functions: Function[];
 	constants: { [key: string]: number };
 }
 
 export const Plugins: { [key: string]: Plugin } = {
 	PHYSICS: {
-		functions: {},
+		functions: [],
 		constants: {
 			c: 299792458,
 			h: 6.626e-34,
@@ -22,7 +22,7 @@ export const Plugins: { [key: string]: Plugin } = {
 		},
 	},
 	CONVERSION: {
-		functions: {},
+		functions: [],
 		constants: {},
 	},
 };

@@ -3,7 +3,7 @@ import { Parser, ParserConfig } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
 import { Evaluator } from "./Solving/Evaluator";
-import { Function } from "./Math/Symbolic/MathFunctions";
+import { Function, FunctionWithoutDerivative } from "./Math/Symbolic/MathFunctions";
 
 type Equation = Node;
 
@@ -14,17 +14,23 @@ export class MathParser {
 	evaluator: Evaluator;
 
 	functions: Function[] = [];
-	variables: { [variable: string]: number } = {};
+	variables: { [variable: string]: number | undefined } = {};
 	constants: { [variable: string]: number } = {};
 
 	constructor(parserConfig?: Partial<ParserConfig>) {
 		this.parser = new Parser(parserConfig);
 		this.patternMatcher = new PatternMatcher();
 		this.simplifier = new Simplifier();
-		this.evaluator = new Evaluator({}, {});
+		this.evaluator = new Evaluator([], {});
 	}
 
-	addFunction() {
+	addFunctions(...functions: (Function | FunctionWithoutDerivative)[]) {
+		functions.forEach(func => {
+			if("derivative" in func) {
 
+			} else {
+
+			}
+		});
 	}
 }

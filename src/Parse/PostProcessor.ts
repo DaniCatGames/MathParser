@@ -33,8 +33,8 @@ export function flattenAST(node: Node): Node {
 export function postProcess(node: PostProcNode): Node {
 	switch(node.type) {
 		case PostProcType.Function:
-			for(const [name, func] of pairs(PostProcessorFunctions)) {
-				if(node.string === name) return func(node.args.map(arg => postProcess(arg)));
+			for(const [_, fn] of ipairs(PostProcessorFunctions)) {
+				if(fn.fn.names.includes(node.string)) return fn.converter(node.args.map(arg => postProcess(arg)));
 			}
 			return BasicNodes.Function(node.string, ...node.args.map(arg => postProcess(arg)));
 		case PostProcType.Unary:

@@ -19,7 +19,7 @@ import { TensorParser } from "./TensorParser";
 import { PostProcList, PostProcNode, PostProcTensor, PostProcType, Token, TokenType } from "../Typescript/Parsing";
 import { BasicNodes } from "../Node/BasicNodes";
 import { Node } from "../Typescript/Node";
-import { MathFunctions, PostProcessorFunctions } from "../Math/Symbolic/MathFunctions";
+import { Function, MathFunctions, PostProcessorFunctions } from "../Math/Symbolic/MathFunctions";
 import { ExtendedMath } from "../Math/FloatingPoint/ExtendedMath";
 
 // <Operator, Precedence>
@@ -40,7 +40,7 @@ const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
 ]);
 
 export interface ParserConfig {
-	extraFunctions: string[]; //TODO: implement number of arguments validation
+	extraFunctions: Function[];
 	extraConstants: string[];
 	variables: string[];
 	plugins: (keyof typeof Plugins)[];
@@ -54,7 +54,7 @@ export class Parser {
 	private endOfInput = false;
 	private result: Node = BasicNodes.Zero();
 
-	private functions = new Set<string>();
+	private functions = new Set<Function>();
 	private variables = new Set<string>();
 	private constants = new Set<string>();
 
@@ -162,11 +162,22 @@ export class Parser {
 	}
 
 	private functionExpression() {
-		const id = this.eat(TokenType.Identifier).value;
+		const name = this.eat(TokenType.Identifier).value;
 
 		const args = this.seperatedExpression(TokenType.LeftParenthesis);
 
-		return postProcFunction(id, args);
+		this.functions.forEach(fn => {
+			if(fn.arguments !== args.size()) {
+				throw new Error(ErrorType.Parser, {
+					message: "Too many/few arguments for this function",
+					args: args,
+					argumentAmount: args.size(),
+					requiredArgs: fn.arguments,
+				});
+			}
+		});
+
+		return postProcFunction(name, args);
 	}
 
 	private seperatedExpression(start: TokenType) {
@@ -297,7 +308,11 @@ export class Parser {
 	}
 
 	private isFunction(input: string) {
-		return this.functions.has(input);
+		let has = false;
+		this.functions.forEach((func) => {
+			if(func.names.includes(input)) has = true;
+		});
+		return has;
 	}
 
 	private unexpectedTokenError(message: string) {
@@ -310,15 +325,11 @@ export class Parser {
 	}
 
 	private setupIdentifiers() {
-		for(const fn in MathFunctions) {
-			this.addFunction(fn);
-		}
-		for(const fn in PostProcessorFunctions) {
-			this.addFunction(fn);
-		}
+		MathFunctions.forEach(fn => this.addFunction(fn));
+		PostProcessorFunctions.forEach(postProcFn => this.addFunction(postProcFn.fn));
 		this.config.extraFunctions.forEach((fn) => this.addFunction(fn));
 
-		for(const con in ExtendedMath.constants) {
+		for(const [con, _] of pairs(ExtendedMath.constants)) {
 			this.addConstant(con);
 		}
 		this.config.extraConstants.forEach((constant) => this.addConstant(constant));
@@ -338,18 +349,18 @@ export class Parser {
 		this.tokenStream.addIdentifier(constant);
 	}
 
-	addFunction(fn: string) {
+	addFunction(fn: Function) {
 		this.functions.add(fn);
-		this.tokenStream.addIdentifier(fn);
-		this.tokenStream.addFunction(fn);
+		fn.names.forEach((name) => {
+			this.tokenStream.addIdentifier(name);
+			this.tokenStream.addFunction(name);
+		});
 	}
 
 	addPlugin(plugin: keyof typeof Plugins) {
 		const thingy = Plugins[plugin];
 
-		for(const [key, _] of pairs(thingy.functions)) {
-			if(!this.functions.has(key as string)) this.addFunction(key as string);
-		}
+		thingy.functions.forEach((fn) => this.addFunction(fn));
 
 		for(const [key, _] of pairs(thingy.constants)) {
 			if(!this.constants.has(key as string)) this.addConstant(key as string);
