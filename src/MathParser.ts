@@ -3,7 +3,7 @@ import { Parser, ParserConfig } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
 import { Evaluator } from "./Solving/Evaluator";
-import { Function, FunctionWithoutDerivative } from "./Math/Symbolic/MathFunctions";
+import { Function } from "./Math/Symbolic/MathFunctions";
 
 type Equation = Node;
 
@@ -13,8 +13,9 @@ export class MathParser {
 	simplifier: Simplifier;
 	evaluator: Evaluator;
 
-	functions: (Function | FunctionWithoutDerivative)[] = [];
+	functions: Function[] = [];
 	variables: { [variable: string]: number } = {};
+	constants: { [variable: string]: number } = {};
 
 	constructor(parserConfig?: Partial<ParserConfig>) {
 		this.parser = new Parser(parserConfig);

@@ -1,7 +1,4 @@
 import { Error, ErrorType } from "../../Typescript/Error";
-import { MathFunctions, PostProcessorFunctions } from "../../Math/Symbolic/MathFunctions";
-import { ExtendedMath } from "../../Math/FloatingPoint/ExtendedMath";
-import { ParserConfig } from "../Parser";
 import { Token, TokenType } from "../../Typescript/Parsing";
 
 const TokenMap = new Map<string, (TokenType | "Whitespace")>([
@@ -27,17 +24,10 @@ const TokenMap = new Map<string, (TokenType | "Whitespace")>([
 export class Tokenizer {
 	private cursor: number;
 	private input: string;
-	private config: ParserConfig;
-	functions = new Set<string>();
-	constants = new Set<string>();
 
-	constructor(input: string, config: ParserConfig) {
+	constructor(input: string) {
 		this.input = input;
 		this.cursor = 0;
-		this.config = config;
-
-		this.collectConstants();
-		this.collectFunctions();
 	}
 
 	reset() {
@@ -82,28 +72,5 @@ export class Tokenizer {
 
 		this.cursor += `${result[0]}`.size();
 		return `${result[0]}`;
-	}
-
-	private collectFunctions() {
-		this.functions.clear();
-
-		for(const [key, _] of pairs(MathFunctions)) {
-			this.functions.add(key as string);
-		}
-		for(const [key, _] of pairs(PostProcessorFunctions)) {
-			this.functions.add(key as string);
-		}
-
-		this.config.extraFunctions.forEach(func => this.functions.add(func));
-	}
-
-	private collectConstants() {
-		this.constants.clear();
-
-		for(const [key, _] of pairs(ExtendedMath.constants)) {
-			this.constants.add(key as string);
-		}
-
-		this.config.extraConstants.forEach(func => this.constants.add(func));
 	}
 }

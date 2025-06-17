@@ -19,6 +19,8 @@ import { TensorParser } from "./TensorParser";
 import { PostProcList, PostProcNode, PostProcTensor, PostProcType, Token, TokenType } from "../Typescript/Parsing";
 import { BasicNodes } from "../Node/BasicNodes";
 import { Node } from "../Typescript/Node";
+import { MathFunctions, PostProcessorFunctions } from "../Math/Symbolic/MathFunctions";
+import { ExtendedMath } from "../Math/FloatingPoint/ExtendedMath";
 
 // <Operator, Precedence>
 const operators = new Map<string, number>([
@@ -40,6 +42,7 @@ const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
 export interface ParserConfig {
 	extraFunctions: string[]; //TODO: implement number of arguments validation
 	extraConstants: string[];
+	variables: string[];
 	plugins: (keyof typeof Plugins)[];
 	maxListSize: number;
 }
@@ -48,25 +51,25 @@ export class Parser {
 	private readonly config: ParserConfig;
 	private tokenStream: TokenStream;
 	private lookahead: Token = {type: TokenType.Add, value: "", index: 0};
-	private functions = new Set<string>();
-	private constants = new Set<string>();
 	private endOfInput = false;
 	private result: Node = BasicNodes.Zero();
+
+	private functions = new Set<string>();
+	private variables = new Set<string>();
+	private constants = new Set<string>();
 
 	constructor(config?: Partial<ParserConfig>) {
 		this.config = {
 			extraFunctions: [],
 			extraConstants: [],
+			variables: [],
 			plugins: [],
 			maxListSize: 200,
 			...config,
 		};
+		this.tokenStream = new TokenStream("");
 
-		this.tokenStream = new TokenStream("", this.config);
-		this.functions = this.tokenStream.functions;
-		this.constants = this.tokenStream.constants;
-
-		this.implementPlugins();
+		this.setupIdentifiers();
 	}
 
 	parse(input: string) {
@@ -297,20 +300,6 @@ export class Parser {
 		return this.functions.has(input);
 	}
 
-	private implementPlugins() {
-		this.config.plugins.forEach(name => {
-			const plugin = Plugins[name];
-
-			for(const [key, _] of pairs(plugin.functions)) {
-				if(!this.functions.has(key as string)) this.functions.add(key as string);
-			}
-
-			for(const [key, _] of pairs(plugin.constants)) {
-				if(!this.constants.has(key as string)) this.constants.add(key as string);
-			}
-		});
-	}
-
 	private unexpectedTokenError(message: string) {
 		throw new Error(ErrorType.UnexpectedToken, {
 			expected: "Expression",
@@ -318,6 +307,53 @@ export class Parser {
 			atIndex: this.lookahead.index,
 			message: message,
 		});
+	}
+
+	private setupIdentifiers() {
+		for(const fn in MathFunctions) {
+			this.addFunction(fn);
+		}
+		for(const fn in PostProcessorFunctions) {
+			this.addFunction(fn);
+		}
+		this.config.extraFunctions.forEach((fn) => this.addFunction(fn));
+
+		for(const con in ExtendedMath.constants) {
+			this.addConstant(con);
+		}
+		this.config.extraConstants.forEach((constant) => this.addConstant(constant));
+
+		this.config.variables.forEach((variable) => this.addVariable(variable));
+
+		this.config.plugins.forEach((plugin) => this.addPlugin(plugin));
+	}
+
+	addVariable(variable: string) {
+		this.variables.add(variable);
+		this.tokenStream.addIdentifier(variable);
+	}
+
+	addConstant(constant: string) {
+		this.constants.add(constant);
+		this.tokenStream.addIdentifier(constant);
+	}
+
+	addFunction(fn: string) {
+		this.functions.add(fn);
+		this.tokenStream.addIdentifier(fn);
+		this.tokenStream.addFunction(fn);
+	}
+
+	addPlugin(plugin: keyof typeof Plugins) {
+		const thingy = Plugins[plugin];
+
+		for(const [key, _] of pairs(thingy.functions)) {
+			if(!this.functions.has(key as string)) this.addFunction(key as string);
+		}
+
+		for(const [key, _] of pairs(thingy.constants)) {
+			if(!this.constants.has(key as string)) this.addConstant(key as string);
+		}
 	}
 }
 

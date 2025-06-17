@@ -1,21 +1,18 @@
 import { Error, ErrorType } from "../../Typescript/Error";
 import { Tokenizer } from "./Tokenizer";
 import { RLEagerTokenizer } from "./RLEagerTokenizer";
-import { ParserConfig } from "../Parser";
 import { Token, TokenType } from "../../Typescript/Parsing";
 
 export class TokenStream {
 	private tokens: Token[] = [];
 	private cursor: number = 0;
 	private tokenizer: Tokenizer;
+
+	identifiers = new Set<string>();
 	functions = new Set<string>();
-	constants = new Set<string>();
 
-	constructor(input: string | Token[], config: ParserConfig) {
-		this.tokenizer = new Tokenizer("", config);
-
-		this.functions = this.tokenizer.functions;
-		this.constants = this.tokenizer.constants;
+	constructor(input: string | Token[]) {
+		this.tokenizer = new Tokenizer("");
 
 		this.tokenize(input);
 	}
@@ -43,6 +40,14 @@ export class TokenStream {
 		this.cursor = 0;
 	}
 
+	addIdentifier(identifier: string) {
+		this.identifiers.add(identifier);
+	}
+
+	addFunction(fn: string) {
+		this.functions.add(fn);
+	}
+
 	private processInput(input: string | Token[]) {
 		if(typeIs(input, "string")) {
 			this.tokenizer.reset();
@@ -60,7 +65,7 @@ export class TokenStream {
 		const eagerTokenized: Token[] = [];
 		this.tokens.forEach(token => {
 			if(token.type === TokenType.Identifier) {
-				const replacement = RLEagerTokenizer(token, this.constants, this.functions);
+				const replacement = RLEagerTokenizer(token, this.identifiers);
 				replacement.forEach(replacementToken => {
 					eagerTokenized.push(replacementToken);
 				});

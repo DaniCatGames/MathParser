@@ -1,10 +1,10 @@
 import { Token, TokenType } from "../../Typescript/Parsing";
 
-export function RLEagerTokenizer(input: Token, variables: Set<string>, functions: Set<string>) {
+export function RLEagerTokenizer(input: Token, identifiers: Set<string>) {
 	const result: Token[] = [];
 
 	while(input.value.size() !== 0) {
-		const newToken = EagerTokenizer(input, variables, functions);
+		const newToken = EagerTokenizer(input, identifiers);
 		result.push(newToken);
 		input = {
 			type: input.type,
@@ -23,18 +23,18 @@ export function RLEagerTokenizer(input: Token, variables: Set<string>, functions
 	return result;
 }
 
-function EagerTokenizer(input: Token, variables: Set<string>, functions: Set<string>): Token {
+function EagerTokenizer(input: Token, identifiers: Set<string>): Token {
 	if(input.value.size() === 1) return input;
-	if(isDefined(input.value, variables, functions)) return input;
+	if(isDefined(input.value, identifiers)) return input;
 
 	const newToken: Token = {
 		type: input.type,
 		value: input.value.sub(2),
 		index: input.index + 1,
 	};
-	return EagerTokenizer(newToken, variables, functions);
+	return EagerTokenizer(newToken, identifiers);
 }
 
-function isDefined(input: string, variables: Set<string>, functions: Set<string>): boolean {
-	return variables.has(input) || functions.has(input);
+function isDefined(input: string, identifiers: Set<string>): boolean {
+	return identifiers.has(input);
 }
