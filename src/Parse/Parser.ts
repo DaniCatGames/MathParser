@@ -1,26 +1,12 @@
 import { Error, ErrorType } from "../Typescript/Error";
-import {
-	postProcAbsolute,
-	postProcBinary,
-	postProcConstant,
-	postProcFactorial,
-	postProcFunction,
-	postProcLiteral,
-	postProcMatrix,
-	postProcTensor,
-	postProcUnary,
-	postProcVariable,
-	postProcVector,
-} from "./PostProcNodes";
-import { Plugins } from "./Plugins";
 import { TokenStream } from "./Tokenizing/TokenStream";
 import { complexLiterals, flat, postProcess } from "./PostProcessor";
 import { TensorParser } from "./TensorParser";
 import { PostProcList, PostProcNode, PostProcTensor, PostProcType, Token, TokenType } from "../Typescript/Parsing";
 import { BasicNodes } from "../Node/BasicNodes";
 import { Node } from "../Typescript/Node";
-import { Function, MathFunctions, PostProcessorFunctions } from "../Math/Symbolic/MathFunctions";
-import { ExtendedMath } from "../Math/FloatingPoint/ExtendedMath";
+import { Function } from "../Math/Symbolic/MathFunctions";
+import { PostProc } from "./PostProcNodes";
 
 // <Operator, Precedence>
 const operators = new Map<string, number>([
@@ -40,10 +26,6 @@ const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
 ]);
 
 export interface ParserConfig {
-	extraFunctions: Function[];
-	extraConstants: string[];
-	variables: string[];
-	plugins: (keyof typeof Plugins)[];
 	maxListSize: number;
 }
 
@@ -60,16 +42,10 @@ export class Parser {
 
 	constructor(config?: Partial<ParserConfig>) {
 		this.config = {
-			extraFunctions: [],
-			extraConstants: [],
-			variables: [],
-			plugins: [],
 			maxListSize: 200,
 			...config,
 		};
 		this.tokenStream = new TokenStream("");
-
-		this.setupIdentifiers();
 	}
 
 	parse(input: string) {
@@ -143,25 +119,14 @@ export class Parser {
 	private tensorExpression(): PostProcTensor {
 		const args = this.seperatedExpression(TokenType.LeftSquareBracket);
 
-		const classification = TensorParser.classifyArrayStructure(args);
+		const structure = TensorParser.analyzeTensorStructure(args);
 
-		switch(classification) {
-			case "Vector":
-				return postProcVector(args);
-			case "Matrix":
-				const matrixStructure = TensorParser.analyzeTensorStructure(args);
-				return postProcMatrix(TensorParser.flattenTensor(args), matrixStructure.shape[0], matrixStructure.shape[1]);
-			case "Tensor":
-				const tensorStructure = TensorParser.analyzeTensorStructure(args);
-				return postProcTensor(TensorParser.flattenTensor(args), tensorStructure.shape);
-			case "Invalid":
-				throw new Error(ErrorType.Parser, {message: "Invalid Tensor Structure"});
-		}
+		return PostProc.Tensor(args, structure.shape);
 	}
 
 	private unaryExpression() {
 		this.eat(TokenType.Subtract);
-		return postProcUnary(this.expression(getPrecedence("unary")));
+		return PostProc.Unary(this.expression(getPrecedence("unary")));
 	}
 
 	private functionExpression() {
@@ -180,7 +145,7 @@ export class Parser {
 			}
 		});
 
-		return postProcFunction(name, args);
+		return PostProc.Function(name, args);
 	}
 
 	private seperatedExpression(start: TokenType) {
@@ -225,7 +190,7 @@ export class Parser {
 		this.eat(TokenType.Absolute);
 		const expression = this.expression();
 		this.eat(TokenType.Absolute);
-		return postProcAbsolute(expression);
+		return PostProc.Absolute(expression);
 	}
 
 	private identifier() {
@@ -233,9 +198,9 @@ export class Parser {
 
 		const variable = this.eat(TokenType.Identifier);
 		if(this.constants.has(variable.value)) {
-			return postProcConstant(variable.value);
+			return PostProc.Constant(variable.value);
 		} else {
-			return postProcVariable(variable.value);
+			return PostProc.Variable(variable.value);
 		}
 	}
 
@@ -254,7 +219,7 @@ export class Parser {
 			case TokenType.Subtract:
 				return this.unaryExpression();
 			case TokenType.Literal:
-				return postProcLiteral(this.eat(TokenType.Literal));
+				return PostProc.Literal(this.eat(TokenType.Literal));
 			case TokenType.Add:
 				this.eat(TokenType.Add);
 				return this.expression(getPrecedence("unary"));
@@ -298,17 +263,17 @@ export class Parser {
 
 		switch(token.type) {
 			case TokenType.Add:
-				return postProcBinary(PostProcType.Add, leftNode, this.expression(newPrecedence));
+				return PostProc.Binary(PostProcType.Add, leftNode, this.expression(newPrecedence));
 			case TokenType.Subtract:
-				return postProcBinary(PostProcType.Subtract, leftNode, this.expression(newPrecedence));
+				return PostProc.Binary(PostProcType.Subtract, leftNode, this.expression(newPrecedence));
 			case TokenType.Multiply:
-				return postProcBinary(PostProcType.Multiply, leftNode, this.expression(newPrecedence));
+				return PostProc.Binary(PostProcType.Multiply, leftNode, this.expression(newPrecedence));
 			case TokenType.Divide:
-				return postProcBinary(PostProcType.Divide, leftNode, this.expression(newPrecedence));
+				return PostProc.Binary(PostProcType.Divide, leftNode, this.expression(newPrecedence));
 			case TokenType.Exponentiation:
-				return postProcBinary(PostProcType.Exponentiation, leftNode, this.expression(newPrecedence - 1));
+				return PostProc.Binary(PostProcType.Exponentiation, leftNode, this.expression(newPrecedence - 1));
 			case TokenType.Factorial:
-				return postProcFactorial(leftNode);
+				return PostProc.Factorial(leftNode);
 		}
 
 		throw new Error(ErrorType.Parser, {
@@ -335,21 +300,6 @@ export class Parser {
 		});
 	}
 
-	private setupIdentifiers() {
-		MathFunctions.forEach(fn => this.addFunction(fn));
-		PostProcessorFunctions.forEach(postProcFn => this.addFunction(postProcFn.fn));
-		this.config.extraFunctions.forEach((fn) => this.addFunction(fn));
-
-		for(const [con, _] of pairs(ExtendedMath.constants)) {
-			this.addConstant(con);
-		}
-		this.config.extraConstants.forEach((constant) => this.addConstant(constant));
-
-		this.config.variables.forEach((variable) => this.addVariable(variable));
-
-		this.config.plugins.forEach((plugin) => this.addPlugin(plugin));
-	}
-
 	addVariable(variable: string) {
 		this.variables.add(variable);
 		this.tokenStream.addIdentifier(variable);
@@ -366,16 +316,6 @@ export class Parser {
 			this.tokenStream.addIdentifier(name);
 			this.tokenStream.addFunction(name);
 		});
-	}
-
-	addPlugin(plugin: keyof typeof Plugins) {
-		const thingy = Plugins[plugin];
-
-		thingy.functions.forEach((fn) => this.addFunction(fn));
-
-		for(const [key, _] of pairs(thingy.constants)) {
-			if(!this.constants.has(key as string)) this.addConstant(key as string);
-		}
 	}
 }
 

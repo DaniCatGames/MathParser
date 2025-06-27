@@ -201,13 +201,12 @@ export const MathFunctions: Function[] = [
 	},
 ];
 
-export const PostProcessorFunctions: { fn: Function, converter: (input: Node[]) => Node }[] = [
+export const PostProcessorFunctions: { fn: FunctionWithoutDerivative, converter: (input: Node[]) => Node }[] = [
 	{
 		fn: {
 			names: ["deg", "degrees", "toDeg", "toDegrees"],
 			arguments: 1,
 			function: () => 0,
-			derivative: () => BasicNodes.Zero(),
 		},
 		converter: ([x]) => {
 			return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Literal(180), BasicNodes.Variable("pi")));
@@ -217,7 +216,6 @@ export const PostProcessorFunctions: { fn: Function, converter: (input: Node[]) 
 			names: ["rad", "radians", "toRad", "toRadians"],
 			arguments: 1,
 			function: () => 0,
-			derivative: () => BasicNodes.Zero(),
 		},
 		converter: ([x]) => {
 			return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Variable("pi"), BasicNodes.Literal(180)));
@@ -227,7 +225,6 @@ export const PostProcessorFunctions: { fn: Function, converter: (input: Node[]) 
 			names: ["abs", "absolute"],
 			arguments: 1,
 			function: () => 0,
-			derivative: () => BasicNodes.Zero(),
 		},
 		converter: ([x]) => {
 			return BasicNodes.Absolute(x);
@@ -237,7 +234,6 @@ export const PostProcessorFunctions: { fn: Function, converter: (input: Node[]) 
 			names: ["vec", "vector"],
 			arguments: 1,
 			function: () => 0,
-			derivative: () => BasicNodes.Zero(),
 		},
 		converter: (args) => {
 			return BasicNodes.Vector(...args);

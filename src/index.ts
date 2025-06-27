@@ -18,7 +18,6 @@ export { NodeTests } from "./Node/NodeUtils";
 export { BasicNodes } from "./Node/BasicNodes";
 
 export { Parser } from "./Parse/Parser";
-export { Plugins } from "./Parse/Plugins";
 
 export { Simplifier } from "./Simplification/Simplifier";
 export { SimplificationRules } from "./Simplification/SimplificationRules";

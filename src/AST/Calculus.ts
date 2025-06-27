@@ -53,13 +53,15 @@ export class Calculus {
 	}
 
 	static numericDerivative(node: Node, variable: string, at: number) {
-		const evaluator = new Evaluator(MathFunctions, {});
+		const evaluator = new Evaluator();
+		MathFunctions.forEach(fn => evaluator.addFunction(fn));
+
 		const h = 1e-7;
 
-		evaluator.setVariable(variable, at + h);
+		evaluator.addVariable(variable, at + h);
 		const a = evaluator.Numeric(node);
 
-		evaluator.setVariable(variable, at + h);
+		evaluator.addVariable(variable, at + h);
 		const b = evaluator.Numeric(node);
 
 		return (a - b) / h;

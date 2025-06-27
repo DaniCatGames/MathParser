@@ -4,12 +4,11 @@ import { Error, ErrorType } from "../Typescript/Error";
 import { GammaFunction } from "../Math/FloatingPoint/Gamma";
 
 export class Evaluator {
-	private readonly functions: Function[];
-	private readonly variables: { [key: string]: number };
+	private readonly functions: Function[] = [];
+	private readonly variables: { [key: string]: number } = {};
+	private readonly constants: { [key: string]: number } = {};
 
-	constructor(functions: Function[], variables: { [key: string]: number }) {
-		this.functions = functions;
-		this.variables = variables;
+	constructor() {
 	}
 
 	Numeric(node: Node): number {
@@ -18,12 +17,12 @@ export class Evaluator {
 				return node.number.real.numerator / node.number.real.denominator;
 			case NodeType.Variable:
 			case NodeType.Constant:
-				const value = this.variables[node.string];
+				const value = this.constants[node.string];
 				if(!value) {
 					throw new Error(ErrorType.Evaluator, {
 						message: "Unknown constant or variable",
 						variable: node.string,
-						variables: this.variables,
+						constants: this.constants,
 					});
 				}
 				return value;
@@ -60,14 +59,13 @@ export class Evaluator {
 		}
 	}
 
-
-
-	setVariable(variable: string, value: number) {
+	addVariable(variable: string, value: number) {
 		this.variables[variable] = value;
 	}
 
 	addFunction(fn: Function) {
-		this.functions.push(fn);
+		const i = this.functions.indexOf(fn);
+		i > -1 ? this.functions[i] = fn : this.functions.push(fn);
 	}
 
 	removeFunction(fn: string) {
@@ -76,5 +74,9 @@ export class Evaluator {
 
 		this.functions.remove(this.functions.indexOf(func));
 		return true;
+	}
+
+	addConstant(constant: string, value: number) {
+		this.constants[constant] = value;
 	}
 }

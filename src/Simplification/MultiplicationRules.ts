@@ -11,7 +11,7 @@ const {
 } = PatternFunctions;
 
 const {
-	Literal, Zero, One, SpecialNodes,
+	Literal, Zero, One, SpecialNodes, NegativeOne,
 } = Patterns;
 
 export const MultiplicationRules: SimplificationRule[] = [
@@ -25,6 +25,14 @@ export const MultiplicationRules: SimplificationRule[] = [
 		pattern: Multiply(SpecialNodes.P, One),
 		requiredNodes: [SpecialNode.P],
 		children: (_, nodes) => nodes["P"],
+	},
+
+	{   // Literal * -1 -> negative
+		pattern: Multiply(P(Literal), NegativeOne),
+		requiredNodes: [SpecialNode.P],
+		node: (node, nodes) => {
+			return LiteralUtils.multiplyValues(nodes["P"] as Literal, BasicNodes.NegativeOne());
+		},
 	},
 
 	{   // Literal * Literal => Literal

@@ -3,9 +3,15 @@ import { Parser, ParserConfig } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
 import { Evaluator } from "./AST/Evaluator";
-import { Function, FunctionWithoutDerivative } from "./Math/Symbolic/MathFunctions";
+import {
+	Function,
+	FunctionWithoutDerivative,
+	MathFunctions,
+	PostProcessorFunctions,
+} from "./Math/Symbolic/MathFunctions";
 import { BasicNodes } from "./Node/BasicNodes";
 import { Error } from "./Typescript/Error";
+import { ExtendedMath } from "./Math/FloatingPoint/ExtendedMath";
 
 export class MathParser {
 	private parser: Parser;
@@ -21,7 +27,8 @@ export class MathParser {
 		this.parser = new Parser(parserConfig);
 		this.patternMatcher = new PatternMatcher();
 		this.simplifier = new Simplifier();
-		this.evaluator = new Evaluator([], {});
+		this.evaluator = new Evaluator();
+		this.setupIdentifiers();
 	}
 
 	addVariables(...variables: ([string, number] | string)[]) {
@@ -32,6 +39,7 @@ export class MathParser {
 			} else {
 				this.variables[variable[0]] = variable[1];
 				this.parser.addVariable(variable[0]);
+				this.evaluator.addVariable(variable[0], variable[1]);
 			}
 		});
 	}
@@ -52,5 +60,36 @@ export class MathParser {
 			this.parser.addFunction(newFunc);
 			this.evaluator.addFunction(newFunc);
 		});
+	}
+
+	addConstants(...constants: ([string, number])[]) {
+		constants.forEach((constant) => {
+			this.constants[constant[0]] = constant[1];
+			this.parser.addConstant(constant[0]);
+			this.evaluator.addConstant(constant[0], constant[1]);
+		});
+	}
+
+	parse(equation: string): Node | Error {
+		try {
+			return this.parser.parse(equation);
+		} catch(error) {
+			return error as Error;
+		}
+	}
+
+	evaluate(node: Node): number | Error {
+		try {
+			return this.evaluator.Numeric(node);
+		} catch(error) {
+			return error as Error;
+		}
+	}
+
+
+	private setupIdentifiers() {
+		this.addFunctions(...MathFunctions);
+		this.addFunctions(...PostProcessorFunctions.map(postproc => postproc.fn));
+		this.addConstants(...pairs(ExtendedMath.constants));
 	}
 }
