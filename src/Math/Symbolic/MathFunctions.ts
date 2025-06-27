@@ -2,7 +2,7 @@ import { ExtendedMath } from "../FloatingPoint/ExtendedMath";
 
 import { Node } from "../../Typescript/Node";
 import { BasicNodes } from "../../Node/BasicNodes";
-import { ComplexUtils } from "./Complex";
+import { Nodes } from "../../Node/NodeUtils";
 
 export interface FunctionWithoutDerivative {
 	names: string[];
@@ -46,7 +46,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Exponentiation(BasicNodes.Function("sec", x), BasicNodes.Literal(2));
+			return Nodes.Square(BasicNodes.Function("sec", x));
 		},
 	},
 	{
@@ -56,7 +56,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Exponentiation(BasicNodes.Function("csc", x), BasicNodes.Literal(2)));
+			return BasicNodes.Negative(Nodes.Square(BasicNodes.Function("csc", x)));
 		},
 	},
 	{
@@ -86,9 +86,8 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Divide(BasicNodes.Literal(1), BasicNodes.Exponentiation(
-				BasicNodes.Subtract(BasicNodes.Literal(1), BasicNodes.Exponentiation(x, BasicNodes.Literal(2))),
-				BasicNodes.Literal(ComplexUtils.fromNumbers(1, 2)),
+			return Nodes.Inverse(Nodes.SquareRoot(
+				BasicNodes.Subtract(BasicNodes.One(), Nodes.Square(x)),
 			));
 		},
 	},
@@ -99,10 +98,9 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Divide(BasicNodes.Negative(BasicNodes.Literal(1)), BasicNodes.Exponentiation(
-				BasicNodes.Subtract(BasicNodes.Literal(1), BasicNodes.Exponentiation(x, BasicNodes.Literal(2))),
-				BasicNodes.Literal(ComplexUtils.fromNumbers(1, 2)),
-			));
+			return BasicNodes.Negative(Nodes.Inverse(Nodes.SquareRoot(
+				BasicNodes.Subtract(BasicNodes.One(), Nodes.Square(x)),
+			)));
 		},
 	},
 	{
@@ -112,7 +110,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Divide(BasicNodes.Literal(1), BasicNodes.Add(BasicNodes.Exponentiation(x, BasicNodes.Literal(2)), BasicNodes.Literal(1)));
+			return Nodes.Inverse(BasicNodes.Add(Nodes.Square(x), BasicNodes.One()));
 		},
 	},
 
@@ -144,7 +142,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Exponentiation(BasicNodes.Function("sech", x), BasicNodes.Literal(2));
+			return Nodes.Square(BasicNodes.Function("sech", x));
 		},
 	},
 	{
@@ -154,7 +152,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Exponentiation(BasicNodes.Function("csch", x), BasicNodes.Literal(2)));
+			return BasicNodes.Negative(Nodes.Square(BasicNodes.Function("csch", x)));
 		},
 	},
 	{
@@ -186,7 +184,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Divide(BasicNodes.Literal(1), x);
+			return Nodes.Inverse(x);
 		},
 	},
 	{
@@ -196,7 +194,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 2,
 		derivative: ([x, base]) => {
-			return BasicNodes.Divide(BasicNodes.Literal(1), BasicNodes.Multiply(x, BasicNodes.Function("ln", base)));
+			return Nodes.Inverse(BasicNodes.Multiply(x, BasicNodes.Function("ln", base)));
 		},
 	},
 ];

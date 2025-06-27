@@ -59,9 +59,9 @@ function Negative(node: Pattern) {
 const Variable = [detectionNode({type: NodeType.Variable})];
 
 
-const Zero = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(0, 0)})];
-const One = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(1, 0)})];
-const NegativeOne = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(-1, 0)})];
+const Zero = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(0)})];
+const One = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(1)})];
+const NegativeOne = [detectionNode({type: NodeType.Literal, number: ComplexUtils.fromNumber(-1)})];
 
 
 const Integers = [detectionNode({

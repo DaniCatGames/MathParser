@@ -15,7 +15,6 @@ import {
 	Variable,
 } from "../Typescript/Node";
 import { Complex } from "../Typescript/Math";
-import { ComplexUtils } from "../Math/Symbolic/Complex";
 
 export class BasicNodes {
 	static Literal(value: number | Complex): Literal {
@@ -167,13 +166,5 @@ export class BasicNodes {
 
 	static Zero() {
 		return this.Literal(0);
-	}
-
-	static SquareRoot(node: Node) {
-		return this.Exponentiation(node, this.Literal(ComplexUtils.fromNumbers(1, 2)));
-	}
-
-	static Square(node: Node) {
-		return this.Exponentiation(node, this.Literal(2));
 	}
 }

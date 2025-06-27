@@ -3,6 +3,7 @@ import { PolynomialAnalyzer } from "./PolynomialAnalyzer";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { BasicNodes } from "../../Node/BasicNodes";
 import { Node } from "../../Typescript/Node";
+import { Nodes } from "../../Node/NodeUtils";
 
 export class PolynomialSolver {
 	private static getCoefficient(polynomial: PolynomialInfo, variable: string, degree: number): Node {
@@ -40,8 +41,8 @@ export class PolynomialSolver {
 			});
 		}
 
-		const D = BasicNodes.SquareRoot(BasicNodes.Subtract(
-			BasicNodes.Square(coefficients.b),
+		const D = Nodes.SquareRoot(BasicNodes.Subtract(
+			Nodes.Square(coefficients.b),
 			BasicNodes.Multiply(
 				BasicNodes.Literal(4),
 				coefficients.a,

@@ -98,7 +98,7 @@ export class NodeUtils {
 	}
 
 	static Divide(node1: Node, node2: Node): Node {
-		return this.Multiply(node1, this.Inverse(node2));
+		return this.Multiply(node1, Nodes.Inverse(node2));
 	}
 
 	static CombineLiterals(nodeType: NodeType.Add | NodeType.Multiply, ...nodes: Node[]): Node[] {
@@ -122,15 +122,26 @@ export class NodeUtils {
 		return args;
 	}
 
-	static Inverse(node: Node): Node {
+}
+
+export class Nodes {
+	static Inverse(node: Node) {
 		if(node.type === NodeType.Exponentiation) {
-			const newExp = this.Multiply(node.args[1], BasicNodes.NegativeOne());
+			const newExp = NodeUtils.Multiply(node.args[1], BasicNodes.NegativeOne());
 
 			if(NodeTests.Zero(newExp)) return node.args[0];
 			else return BasicNodes.Exponentiation(node.args[0], newExp);
 		} else {
 			return BasicNodes.Exponentiation(node, BasicNodes.NegativeOne());
 		}
+	}
+
+	static SquareRoot(node: Node) {
+		return BasicNodes.Exponentiation(node, BasicNodes.Literal(ComplexUtils.fromNumbers(1, 2)));
+	}
+
+	static Square(node: Node) {
+		return BasicNodes.Exponentiation(node, BasicNodes.Literal(2));
 	}
 }
 

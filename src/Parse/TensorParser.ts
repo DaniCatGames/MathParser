@@ -1,4 +1,4 @@
-import { PostProcNode, PostProcTensor, PostProcType } from "../Typescript/Parsing";
+import { PostProcNode, PostProcType } from "../Typescript/Parsing";
 
 export class TensorParser {
 	static analyzeTensorStructure(args: PostProcNode[]): { shape: number[], isValidTensor: boolean } {
@@ -10,32 +10,6 @@ export class TensorParser {
 		const isValid = this.validateTensorShape(args, shape, 0);
 
 		return {shape, isValidTensor: isValid};
-	}
-
-	static flattenTensor(args: PostProcNode[]): PostProcNode[] {
-		const flattened: PostProcNode[] = [];
-
-		for(const arg of args) {
-			if(arg.type === PostProcType.Tensor) {
-				const subFlattened = this.flattenTensor((arg as PostProcTensor).args);
-				subFlattened.forEach(x => flattened.push(x));
-			} else {
-				flattened.push(arg);
-			}
-		}
-
-		return flattened;
-	}
-
-	static classifyArrayStructure(args: PostProcNode[]): "Vector" | "Matrix" | "Tensor" | "Invalid" {
-		const {shape, isValidTensor} = this.analyzeTensorStructure(args);
-
-		if(!isValidTensor) return "Invalid";
-
-		if(shape.size() === 1) return "Vector";
-		else if(shape.size() === 2) return "Matrix";
-		else if(shape.size() >= 3) return "Tensor";
-		else return "Invalid";
 	}
 
 	private static calculateShape(args: PostProcNode[]): number[] {
@@ -68,7 +42,7 @@ export class TensorParser {
 		return args.every(arg => {
 			if(arg.type !== PostProcType.Tensor) return false;
 			return this.validateTensorShape(
-				(arg as PostProcTensor).args,
+				arg.args,
 				expectedShape,
 				currentDepth + 1,
 			);

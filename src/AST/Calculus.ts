@@ -205,35 +205,20 @@ export class Calculus {
 			return BasicNodes.Zero();
 		}
 
-		if(node.args.size() === 1) {
-			const arg = node.args[0];
-			const argDerivative = this.derivative(arg, variable);
+		const argDerivative = this.derivative(node.args[0], variable);
 
-			if(this.isZero(argDerivative)) {
-				return BasicNodes.Zero();
-			}
+		let mathFunction: ExtraFunctionTypeBecauseOfStupidImports | undefined;
 
-			let mathFunction: ExtraFunctionTypeBecauseOfStupidImports | undefined;
+		mathFunction = MathFunctions.find(fn => fn.names.includes(node.string));
 
-			MathFunctions.forEach(fn => {
-				if(fn.names.includes(node.string)) mathFunction = fn;
+		if(!mathFunction) {
+			throw new Error(ErrorType.Derivative, {
+				message: "Function not found or implemented",
+				function: node.string,
 			});
-
-			if(!mathFunction) {
-				throw new Error(ErrorType.Derivative, {
-					message: "Function not found or implemented",
-					function: node.string,
-				});
-			}
-
-			return BasicNodes.Multiply(mathFunction.derivative([arg]), argDerivative);
 		}
 
-		throw new Error(ErrorType.Derivative, {
-			message: "Multi-argument function derivatives not implemented",
-			function: node.string,
-			args: node.args.size(),
-		});
+		return BasicNodes.Multiply(mathFunction.derivative(node.args), argDerivative);
 	}
 
 	private static factorial(node: Factorial, variable: string): Node {

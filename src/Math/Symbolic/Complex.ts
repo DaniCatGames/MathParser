@@ -52,7 +52,7 @@ export class ComplexUtils {
 		return FractionUtils.equal(a.real, b.real) && FractionUtils.equal(a.imaginary, b.imaginary);
 	}
 
-	static fromNumber(real: number, imaginary: number): Complex {
+	static fromNumber(real: number, imaginary: number = 0): Complex {
 		return {
 			real: {
 				numerator: real,
@@ -79,6 +79,6 @@ export class ComplexUtils {
 	}
 
 	static zero() {
-		return this.fromNumber(0, 0);
+		return this.fromNumber(0);
 	}
 }
