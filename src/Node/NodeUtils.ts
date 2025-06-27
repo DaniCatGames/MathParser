@@ -101,7 +101,7 @@ export class NodeUtils {
 		return this.Multiply(node1, this.Inverse(node2));
 	}
 
-	static CombineLiterals(type: NodeType.Add | NodeType.Multiply, ...nodes: Node[]): Node[] {
+	static CombineLiterals(nodeType: NodeType.Add | NodeType.Multiply, ...nodes: Node[]): Node[] {
 		const args: Node[] = [];
 		const literals: Literal[] = [];
 
@@ -115,7 +115,7 @@ export class NodeUtils {
 
 		if(literals.size() > 0) {
 			args.push(
-				type === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
+				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
 			);
 		}
 
