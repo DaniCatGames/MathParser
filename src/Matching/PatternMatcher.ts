@@ -85,7 +85,7 @@ export class PatternMatcher {
 	private matchSingleNode(node: Node, pattern: MatchNode, specialNodes: SpecialNodes) {
 		if(pattern.specialNode) {
 			if(specialNodes[pattern.specialNode] !== undefined) {
-				if(!NodeUtils.equal(node, specialNodes[pattern.specialNode])) {
+				if(!NodeUtils.Equal(node, specialNodes[pattern.specialNode])) {
 					return false;
 				}
 			} else {
@@ -97,17 +97,17 @@ export class PatternMatcher {
 			return false;
 		}
 
-		if(pattern.string !== undefined && NodeUtils.hasString(node) && node.string !== pattern.string) {
+		if(pattern.string !== undefined && NodeUtils.HasString(node) && node.string !== pattern.string) {
 			return false;
-		} else if(pattern.string !== undefined && !NodeUtils.hasString(node)) {
+		} else if(pattern.string !== undefined && !NodeUtils.HasString(node)) {
 			return false;
 		}
 
-		if(pattern.number !== undefined && NodeUtils.hasNumber(node)) {
+		if(pattern.number !== undefined && NodeUtils.HasNumber(node)) {
 			if(!ComplexUtils.equal(node.number, pattern.number)) {
 				return false;
 			}
-		} else if(pattern.number !== undefined && !NodeUtils.hasNumber(node)) {
+		} else if(pattern.number !== undefined && !NodeUtils.HasNumber(node)) {
 			return false;
 		}
 
@@ -117,9 +117,9 @@ export class PatternMatcher {
 			}
 		}
 
-		if(pattern.args && NodeUtils.hasArgs(node)) {
+		if(pattern.args && NodeUtils.HasArgs(node)) {
 			return this.matchArgs(node.args, pattern.args, specialNodes);
-		} else if(pattern.args !== undefined && !NodeUtils.hasArgs(node)) {
+		} else if(pattern.args !== undefined && !NodeUtils.HasArgs(node)) {
 			return false;
 		}
 
@@ -141,7 +141,7 @@ export class PatternMatcher {
 	}
 
 	private findPartialMatches(node: Node, pattern: MatchNode): MatchResult {
-		if(!NodeUtils.hasArgs(node) || !pattern.args) {
+		if(!NodeUtils.HasArgs(node) || !pattern.args) {
 			return {matched: false};
 		}
 
@@ -182,7 +182,7 @@ export class PatternMatcher {
 	}
 
 	private replaceChildren(node: Node, rule: SimplificationRule, specialNodes: SpecialNodes, matchedIndices: number[]) {
-		if(!NodeUtils.hasArgs(node) || !rule.children) {
+		if(!NodeUtils.HasArgs(node) || !rule.children) {
 			return node;
 		}
 

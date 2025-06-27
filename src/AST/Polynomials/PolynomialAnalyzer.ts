@@ -7,11 +7,11 @@ import {
 	PolynomialTerm,
 	PolynomialType,
 	SpecialForm,
-} from "../Typescript/Polynomials";
-import { Add, Exponentiation, Literal, Multiply, Node } from "../Typescript/Node";
-import { BasicNodes } from "../Node/BasicNodes";
-import { NodeTests } from "../Node/NodeUtils";
-import { deDuplicate } from "../Polyfill/Array";
+} from "../../Typescript/Polynomials";
+import { Add, Exponentiation, Literal, Multiply, Node } from "../../Typescript/Node";
+import { BasicNodes } from "../../Node/BasicNodes";
+import { NodeTests } from "../../Node/NodeUtils";
+import { deDuplicate } from "../../Polyfill/Array";
 
 export class PolynomialAnalyzer {
 

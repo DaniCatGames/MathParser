@@ -14,7 +14,7 @@ import {
 } from "./PostProcNodes";
 import { Plugins } from "./Plugins";
 import { TokenStream } from "./Tokenizing/TokenStream";
-import { complexLiterals, flattenAST, postProcess } from "./PostProcessor";
+import { complexLiterals, flat, postProcess } from "./PostProcessor";
 import { TensorParser } from "./TensorParser";
 import { PostProcList, PostProcNode, PostProcTensor, PostProcType, Token, TokenType } from "../Typescript/Parsing";
 import { BasicNodes } from "../Node/BasicNodes";
@@ -81,7 +81,7 @@ export class Parser {
 
 		const result = this.expression();
 		this.result = postProcess(result);
-		this.result = flattenAST(this.result);
+		this.result = flat(this.result);
 		this.result = complexLiterals(this.result);
 
 		return this.result;
@@ -93,11 +93,14 @@ export class Parser {
 	}
 
 	private eat(tokenType: TokenType) {
-		if(this.endOfInput) throw new Error(ErrorType.UnexpectedEndOfInput, {});
+		if(this.endOfInput) throw new Error(ErrorType.Parser, {
+			message: "Unexpected end of input",
+		});
 
 		const token = this.lookahead;
 
-		if(token.type !== tokenType) throw new Error(ErrorType.UnexpectedToken, {
+		if(token.type !== tokenType) throw new Error(ErrorType.Parser, {
+			message: "Unexpected token",
 			expected: tokenType,
 			got: token.type,
 		});
@@ -152,7 +155,7 @@ export class Parser {
 				const tensorStructure = TensorParser.analyzeTensorStructure(args);
 				return postProcTensor(TensorParser.flattenTensor(args), tensorStructure.shape);
 			case "Invalid":
-				throw new Error(ErrorType.TypeError, {message: "Invalid Tensor Structure"});
+				throw new Error(ErrorType.Parser, {message: "Invalid Tensor Structure"});
 		}
 	}
 
@@ -191,14 +194,20 @@ export class Parser {
 				argumentSeparator = value[1];
 			}
 		});
-		if(endingType === undefined || argumentSeparator === undefined) throw new Error(ErrorType.TypeError, {});
+
+		if(endingType === undefined || argumentSeparator === undefined)
+			throw new Error(ErrorType.Parser, {
+				message: "Error parsing seperated expression",
+			});
 
 		let loopCounter = 0;
 		const args: PostProcNode[] = [];
 
 		while(this.lookahead.type !== endingType) {
 			loopCounter++;
-			if(loopCounter > this.config.maxListSize) throw new Error(ErrorType.MaxSizeExceeded, {});
+			if(loopCounter > this.config.maxListSize) throw new Error(ErrorType.Parser, {
+				message: "Max list size exceeded",
+			});
 
 			args.push(this.expression());
 
@@ -276,7 +285,8 @@ export class Parser {
 				break;
 		}
 
-		throw new Error(ErrorType.UnknownPrefixToken, {
+		throw new Error(ErrorType.Parser, {
+			message: "Unknown prefix token",
 			type: this.lookahead.type,
 			value: this.lookahead.value,
 		});
@@ -301,7 +311,8 @@ export class Parser {
 				return postProcFactorial(leftNode);
 		}
 
-		throw new Error(ErrorType.UnknownMixfixToken, {
+		throw new Error(ErrorType.Parser, {
+			message: "Unknown mixfix token",
 			type: token.type,
 			value: token.value,
 		});
@@ -316,11 +327,11 @@ export class Parser {
 	}
 
 	private unexpectedTokenError(message: string) {
-		throw new Error(ErrorType.UnexpectedToken, {
+		throw new Error(ErrorType.Parser, {
+			message: message,
 			expected: "Expression",
 			got: this.lookahead.type,
 			atIndex: this.lookahead.index,
-			message: message,
 		});
 	}
 

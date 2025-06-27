@@ -15,9 +15,9 @@ import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
 import { NodeUtils } from "../Node/NodeUtils";
-import { Evaluator } from "../Solving/Evaluator";
+import { Evaluator } from "./Evaluator";
 import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
-import { PolynomialAnalyzer } from "./PolynomialAnalyzer";
+import { PolynomialAnalyzer } from "./Polynomials/PolynomialAnalyzer";
 
 
 export class Calculus {
@@ -45,7 +45,7 @@ export class Calculus {
 			case NodeType.Tensor:
 				return this.tensor(node, variable);
 			case NodeType.Equals:
-				throw new Error(ErrorType.InvalidNodeType, {
+				throw new Error(ErrorType.Derivative, {
 					message: "Cannot take derivative of equality operator",
 					node: node,
 				});
@@ -227,7 +227,7 @@ export class Calculus {
 			return BasicNodes.Multiply(mathFunction.derivative([arg]), argDerivative);
 		}
 
-		throw new Error(ErrorType.InvalidNodeType, {
+		throw new Error(ErrorType.Derivative, {
 			message: "Multi-argument function derivatives not implemented",
 			function: node.string,
 			args: node.args.size(),
@@ -235,7 +235,7 @@ export class Calculus {
 	}
 
 	private static factorial(node: Factorial, variable: string): Node {
-		throw new Error(ErrorType.InvalidNodeType, {
+		throw new Error(ErrorType.Derivative, {
 			message: "Factorial derivative not implemented",
 		});
 	}
@@ -254,6 +254,6 @@ export class Calculus {
 
 	private static isZero(node: Node) {
 		return node.type === NodeType.Literal
-			&& NodeUtils.equal(node, BasicNodes.Zero());
+			&& NodeUtils.Equal(node, BasicNodes.Zero());
 	}
 }

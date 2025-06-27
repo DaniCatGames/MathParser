@@ -24,7 +24,9 @@ export class TokenStream {
 	}
 
 	nextToken() {
-		if(!this.hasMoreTokens()) throw new Error(ErrorType.UnexpectedEndOfInput, {});
+		if(!this.hasMoreTokens()) throw new Error(ErrorType.Tokenizer, {
+			message: "Unexpected end of input",
+		});
 
 		const token = this.tokens[this.cursor];
 		this.cursor++;

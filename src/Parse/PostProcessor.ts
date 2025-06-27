@@ -1,33 +1,43 @@
 import { Node, NodeType } from "../Typescript/Node";
 import { PostProcessorFunctions } from "../Math/Symbolic/MathFunctions";
-import { flatMap } from "../Polyfill/Array";
+import { concat } from "../Polyfill/Array";
 import { BasicNodes } from "../Node/BasicNodes";
 import { PostProcNode, PostProcType } from "../Typescript/Parsing";
 import { NodeUtils } from "../Node/NodeUtils";
-import { Error, ErrorType } from "../Typescript/Error";
 import { ComplexUtils } from "../Math/Symbolic/Complex";
 
-export function flattenAST(node: Node): Node {
-	function flattenNode(node: Node, parentType?: NodeType): Node[] {
-		if(node.type === parentType && (node.type === NodeType.Add || node.type === NodeType.Multiply)) {
-			return flatMap(node.args, (arg) => flattenNode(arg, node.type));
-		} else if(node.type === NodeType.Variable || node.type === NodeType.Literal || node.type === NodeType.Constant) {
-			return [node];
-		} else {
-			const args = NodeUtils.getArgs(node);
-			if(!args) throw new Error(ErrorType.Parser, {
-				message: "node does not have arguments",
-			});
-			const newArgs = flatMap(args, (arg) => flattenNode(arg, node.type));
-
-			return [{
-				...node,
-				args: newArgs,
-			}];
-		}
+export function flat(node: Node): Node {
+	if(node.type === NodeType.Add) {
+		return {
+			type: NodeType.Add,
+			args: concatType(node.args, NodeType.Add),
+		};
+	} else if(node.type === NodeType.Multiply) {
+		return {
+			type: NodeType.Multiply,
+			args: concatType(node.args, NodeType.Multiply),
+		};
+	} else if(NodeUtils.HasArgs(node)) {
+		return {
+			...node,
+			args: node.args.map(arg => flat(arg)),
+		};
+	} else {
+		return node;
 	}
+}
 
-	return flattenNode(node)[0];
+function concatType(args: Node[], nodeType: NodeType.Add | NodeType.Multiply): Node[] {
+	let newArgs: Node[] = [];
+
+	args.forEach(arg => {
+		arg = flat(arg);
+
+		if(arg.type === nodeType) newArgs = concat(newArgs, arg.args);
+		else newArgs.push(arg);
+	});
+
+	return newArgs;
 }
 
 export function postProcess(node: PostProcNode): Node {
@@ -70,8 +80,8 @@ export function complexLiterals(node: Node): Node {
 	if(node.type === NodeType.Variable && node.string === "i") {
 		return BasicNodes.Literal(ComplexUtils.fromNumbers(0, 1, 1, 1));
 	} else {
-		const args = NodeUtils.getArgs(node);
-		if(args !== undefined && NodeUtils.hasArgs(node)) {
+		const args = NodeUtils.GetArgs(node);
+		if(args !== undefined && NodeUtils.HasArgs(node)) {
 			return {
 				...node,
 				args: args.map(arg => complexLiterals(arg)),

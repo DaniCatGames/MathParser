@@ -1,8 +1,8 @@
-import { PolynomialInfo, PolynomialType } from "../Typescript/Polynomials";
+import { PolynomialInfo, PolynomialType } from "../../Typescript/Polynomials";
 import { PolynomialAnalyzer } from "./PolynomialAnalyzer";
-import { Error, ErrorType } from "../Typescript/Error";
-import { BasicNodes } from "../Node/BasicNodes";
-import { Node } from "../Typescript/Node";
+import { Error, ErrorType } from "../../Typescript/Error";
+import { BasicNodes } from "../../Node/BasicNodes";
+import { Node } from "../../Typescript/Node";
 
 export class PolynomialSolver {
 	private static getCoefficient(polynomial: PolynomialInfo, variable: string, degree: number): Node {

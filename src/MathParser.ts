@@ -2,17 +2,16 @@ import { PatternMatcher } from "./Matching/PatternMatcher";
 import { Parser, ParserConfig } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
-import { Evaluator } from "./Solving/Evaluator";
+import { Evaluator } from "./AST/Evaluator";
 import { Function, FunctionWithoutDerivative } from "./Math/Symbolic/MathFunctions";
 import { BasicNodes } from "./Node/BasicNodes";
-
-type Equation = Node;
+import { Error } from "./Typescript/Error";
 
 export class MathParser {
-	parser: Parser;
-	patternMatcher: PatternMatcher;
-	simplifier: Simplifier;
-	evaluator: Evaluator;
+	private parser: Parser;
+	private patternMatcher: PatternMatcher;
+	private simplifier: Simplifier;
+	private evaluator: Evaluator;
 
 	functions: Function[] = [];
 	variables: { [variable: string]: number } = {};

@@ -28,7 +28,7 @@ export class Simplifier {
 	}
 
 	private simplifyChildren(node: Node, rules: SimplificationRule[]): Node {
-		if(NodeUtils.hasArgs(node)) {
+		if(NodeUtils.HasArgs(node)) {
 			const simplifiedArgs = node.args.map((arg) => this.simplify(arg, rules));
 			return {
 				...node,

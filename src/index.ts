@@ -1,6 +1,6 @@
 export { Calculus } from "./AST/Calculus";
-export { PolynomialAnalyzer } from "./AST/PolynomialAnalyzer";
-export { PolynomialSolver } from "./AST/PolynomialSolver";
+export { PolynomialAnalyzer } from "./AST/Polynomials/PolynomialAnalyzer";
+export { PolynomialSolver } from "./AST/Polynomials/PolynomialSolver";
 export { Visualizer } from "./AST/Visualizer";
 
 export { PatternMatcher } from "./Matching/PatternMatcher";
@@ -23,4 +23,4 @@ export { Plugins } from "./Parse/Plugins";
 export { Simplifier } from "./Simplification/Simplifier";
 export { SimplificationRules } from "./Simplification/SimplificationRules";
 
-export { Evaluator } from "./Solving/Evaluator";
+export { Evaluator } from "./AST/Evaluator";

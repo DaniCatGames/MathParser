@@ -40,7 +40,9 @@ export class Tokenizer {
 	}
 
 	nextToken(): Token {
-		if(!this.hasMoreTokens()) throw new Error(ErrorType.UnexpectedEndOfInput, {});
+		if(!this.hasMoreTokens()) throw new Error(ErrorType.Tokenizer, {
+			message: "Unexpected end of input",
+		});
 
 		for(const [match, type] of TokenMap) {
 			const tokenValue = this.match(match);
@@ -56,7 +58,8 @@ export class Tokenizer {
 			};
 		}
 
-		throw new Error(ErrorType.UnknownToken, {
+		throw new Error(ErrorType.Tokenizer, {
+			message: "Unknown token",
 			currentlyProcessing: this.input.sub(this.cursor + 1),
 		});
 	}

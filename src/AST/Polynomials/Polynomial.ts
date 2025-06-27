@@ -1,10 +1,9 @@
 import { PolynomialAnalyzer } from "./PolynomialAnalyzer";
-import { BasicNodes } from "../Node/BasicNodes";
-import { Node } from "../Typescript/Node";
-import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
-import { Error, ErrorType } from "../Typescript/Error";
-import { flattenAST } from "../Parse/PostProcessor";
-import { NodeTests } from "../Node/NodeUtils";
+import { BasicNodes } from "../../Node/BasicNodes";
+import { Node } from "../../Typescript/Node";
+import { Polynomial, PolynomialTerm } from "../../Typescript/Polynomials";
+import { Error, ErrorType } from "../../Typescript/Error";
+import { NodeTests, NodeUtils } from "../../Node/NodeUtils";
 
 export class PolynomialUtils {
 	static Add(poly1: Polynomial, poly2: Polynomial) {
@@ -207,7 +206,7 @@ export class PolynomialUtils {
 
 				map.set(signature, {
 					...previous,
-					coefficient: flattenAST(BasicNodes.Add(previous.coefficient, term.coefficient)),
+					coefficient: NodeUtils.Add(previous.coefficient, term.coefficient),
 				});
 			} else {
 				map.set(signature, term);
@@ -222,37 +221,31 @@ export class PolynomialUtils {
 	}
 
 	private static MultiplyTerms(term1: PolynomialTerm, term2: PolynomialTerm): PolynomialTerm {
-		const newCoefficient = BasicNodes.Multiply(term1.coefficient, term2.coefficient);
+		const newCoefficient = NodeUtils.Multiply(term1.coefficient, term2.coefficient);
 		const newVariables = new Map<string, number>();
 
-		const allVariables = new Set<string>();
-		term1.variables.forEach((_, variable) => {
-			allVariables.add(variable);
-		});
-		term2.variables.forEach((_, variable) => {
-			allVariables.add(variable);
+		const alreadyProcessed = new Set<string>();
 
+		term1.variables.forEach((power, variable) => {
+			newVariables.set(variable, power + (term2.variables.get(variable) || 0));
+			alreadyProcessed.add(variable);
 		});
 
-		for(const variable of allVariables) {
-			const power1 = term1.variables.get(variable) || 0;
-			const power2 = term2.variables.get(variable) || 0;
-			const newPower = power1 + power2;
-
-			if(newPower > 0) {
-				newVariables.set(variable, newPower);
+		term2.variables.forEach((power, variable) => {
+			if(!alreadyProcessed.has(variable)) {
+				newVariables.set(variable, power);
 			}
-		}
+		});
 
-		return {
+		return this.removeZeroPowers({
 			coefficient: newCoefficient,
 			variables: newVariables,
 			degree: term1.degree + term2.degree,
-		};
+		});
 	}
 
 	private static DivideTerms(dividend: PolynomialTerm, divisor: PolynomialTerm): PolynomialTerm {
-		const newCoeff = BasicNodes.Divide(dividend.coefficient, divisor.coefficient);
+		const newCoeff = NodeUtils.Divide(dividend.coefficient, divisor.coefficient);
 		const newVars = new Map<string, number>();
 
 		for(const [variable, dividendPower] of dividend.variables) {
@@ -296,8 +289,26 @@ export class PolynomialUtils {
 		return PolynomialAnalyzer.createPolynomial(
 			poly.terms.map(term => ({
 				...term,
-				coefficient: BasicNodes.Divide(term.coefficient, lead),
+				coefficient: NodeUtils.Divide(term.coefficient, lead),
 			})),
 		);
+	}
+
+	static removeZeroPowers<T extends Polynomial | PolynomialTerm>(poly: T): T {
+		if("terms" in poly) {
+			return PolynomialAnalyzer.createPolynomial(poly.terms.map(term => this.removeZeroPowers(term))) as T;
+		} else {
+			const newVariables = new Map<string, number>();
+			poly.variables.forEach((power, variable) => {
+				if(power !== 0) {
+					newVariables.set(variable, power);
+				}
+			});
+
+			return {
+				...poly,
+				variables: newVariables,
+			};
+		}
 	}
 }

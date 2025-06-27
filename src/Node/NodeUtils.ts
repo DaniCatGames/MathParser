@@ -1,57 +1,136 @@
-import { Node, NodeType } from "../Typescript/Node";
+import { Add, Literal, Multiply, Node, NodeType } from "../Typescript/Node";
 import { BasicNodes } from "./BasicNodes";
 import { ComplexUtils } from "../Math/Symbolic/Complex";
+import { LiteralUtils } from "./Literal";
 
 export class NodeUtils {
 	static AddOne(node: Node) {
 		return BasicNodes.Add(node, BasicNodes.Literal(1));
 	}
 
-	static hasArgs(node: Node) {
+	static HasArgs(node: Node) {
 		return "args" in node;
 	}
 
-	static hasString(node: Node) {
+	static HasString(node: Node) {
 		return "string" in node;
 	}
 
-	static hasNumber(node: Node) {
+	static HasNumber(node: Node) {
 		return "number" in node;
 	}
 
-	static getArgs(node: Node) {
-		if(this.hasArgs(node)) {
+	static GetArgs(node: Node) {
+		if(this.HasArgs(node)) {
 			return node.args;
 		} else {
 			return undefined;
 		}
 	}
 
-	static equal(a: Node, b: Node) {
+	static Equal(a: Node, b: Node) {
 		if(a.type !== b.type) return false;
 
-		if(this.hasString(a) && this.hasString(b)) {
+		if(this.HasString(a) && this.HasString(b)) {
 			if(a.string !== b.string) return false;
-		} else if(this.hasString(a) !== this.hasString(b)) {
+		} else if(this.HasString(a) !== this.HasString(b)) {
 			return false;
 		}
 
-		if(this.hasNumber(a) && this.hasNumber(b)) {
+		if(this.HasNumber(a) && this.HasNumber(b)) {
 			if(!ComplexUtils.equal(a.number, b.number)) return false;
-		} else if(this.hasNumber(a) !== this.hasNumber(b)) {
+		} else if(this.HasNumber(a) !== this.HasNumber(b)) {
 			return false;
 		}
 
-		if(this.hasArgs(a) && this.hasArgs(b)) {
+		if(this.HasArgs(a) && this.HasArgs(b)) {
 			if(a.args.size() !== b.args.size()) return false;
 			for(let i = 0; i < a.args.size(); i++) {
-				if(!this.equal(a.args[i], b.args[i])) return false;
+				if(!this.Equal(a.args[i], b.args[i])) return false;
 			}
-		} else if(this.hasArgs(a) !== this.hasArgs(b)) {
+		} else if(this.HasArgs(a) !== this.HasArgs(b)) {
 			return false;
 		}
 
 		return true;
+	}
+
+	static QuickFlat<T extends Add | Multiply>(node: T): T {
+		const newArgs: Node[] = [];
+		node.args.forEach(arg => {
+			if(arg.type === node.type) {
+				arg.args.forEach(argarg => newArgs.push(argarg));
+			} else {
+				newArgs.push(arg);
+			}
+		});
+
+		return {
+			type: node.type,
+			args: newArgs,
+		} as T;
+	}
+
+	static Multiply(...nodes: Node[]): Node {
+		const combined = this.CombineLiterals(NodeType.Add, ...nodes);
+
+		if(combined.size() === 1) {
+			return combined[0];
+		} else {
+			return this.QuickFlat({
+				type: NodeType.Add,
+				args: combined,
+			});
+		}
+	}
+
+	static Add(...nodes: Node[]): Node {
+		const combined = this.CombineLiterals(NodeType.Add, ...nodes);
+
+		if(combined.size() === 1) {
+			return combined[0];
+		} else {
+			return this.QuickFlat({
+				type: NodeType.Add,
+				args: combined,
+			});
+		}
+	}
+
+	static Divide(node1: Node, node2: Node): Node {
+		return this.Multiply(node1, this.Inverse(node2));
+	}
+
+	static CombineLiterals(type: NodeType.Add | NodeType.Multiply, ...nodes: Node[]): Node[] {
+		const args: Node[] = [];
+		const literals: Literal[] = [];
+
+		nodes.forEach(node => {
+			if(node.type === NodeType.Literal) {
+				literals.push(node);
+			} else {
+				args.push(node);
+			}
+		});
+
+		if(literals.size() > 0) {
+			args.push(
+				type === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
+			);
+		}
+
+		return args;
+	}
+
+	static Inverse(node: Node): Node {
+		if(node.type === NodeType.Exponentiation) {
+			const newExp = this.Multiply(node.args[1], BasicNodes.NegativeOne());
+
+			if(NodeTests.Zero(newExp)) return node.args[0];
+			else return BasicNodes.Exponentiation(node.args[0], newExp);
+		} else {
+			return BasicNodes.Exponentiation(node, BasicNodes.NegativeOne());
+		}
 	}
 }
 
