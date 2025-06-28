@@ -92,6 +92,30 @@ export class NodeUtils {
 		return args;
 	}
 
+	static ToString(node: Node): string {
+		let toReturn = "{";
+
+		toReturn += tostring(node.type);
+
+		if(NodeUtils.HasNumber(node)) {
+			toReturn += `:${node.number.real.numerator}|${node.number.real.denominator}|${node.number.imaginary.numerator}|${node.number.imaginary.denominator}`;
+		}
+
+		if(NodeUtils.HasString(node)) {
+			toReturn += `:${node.string}`;
+		}
+
+		if(NodeTests.Tensor(node)) {
+			toReturn += `:${node.shape.join("|")}`;
+		}
+
+		if(NodeUtils.HasArgs(node)) {
+			toReturn += `:${node.args.map(arg => this.ToString(arg)).join("|")}`;
+		}
+
+		toReturn += "}";
+		return toReturn;
+	}
 }
 
 export class Nodes {
