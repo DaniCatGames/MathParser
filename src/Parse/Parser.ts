@@ -119,19 +119,28 @@ export class Parser {
 
 	private functionExpression() {
 		const name = this.eat(TokenType.Identifier).value;
-
 		const args = this.seperatedExpression(TokenType.LeftParenthesis);
 
-		this.functions.forEach(fn => {
-			if(fn.arguments !== args.size()) {
-				throw new Error(ErrorType.Parser, {
-					message: "Too many/few arguments for this function",
-					args: args,
-					argumentAmount: args.size(),
-					requiredArgs: fn.arguments,
-				});
-			}
-		});
+		let foundFunction: Function | undefined;
+		for(const [func, _] of pairs(this.functions)) {
+			if(func.names.includes(name)) foundFunction = func;
+		}
+
+		if(!foundFunction) {
+			throw new Error(ErrorType.Parser, {
+				message: `Unknown function: ${name}`,
+				functionName: name,
+			});
+		}
+
+		if(foundFunction.arguments !== args.size()) {
+			throw new Error(ErrorType.Parser, {
+				message: "Too many/few arguments for this function",
+				args: args,
+				argumentAmount: args.size(),
+				requiredArgs: foundFunction.arguments,
+			});
+		}
 
 		return BasicNodes.Function(name, ...args);
 	}
