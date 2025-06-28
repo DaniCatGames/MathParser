@@ -1,12 +1,10 @@
 import { Error, ErrorType } from "../Typescript/Error";
 import { TokenStream } from "./Tokenizing/TokenStream";
-import { complexLiterals, flat, postProcess } from "./PostProcessor";
 import { TensorParser } from "./TensorParser";
-import { PostProcList, PostProcNode, PostProcTensor, PostProcType, Token, TokenType } from "../Typescript/Parsing";
-import { BasicNodes } from "../Node/BasicNodes";
+import { Token, TokenType } from "../Typescript/Parsing";
 import { Node } from "../Typescript/Node";
 import { Function } from "../Math/Symbolic/MathFunctions";
-import { PostProc } from "./PostProcNodes";
+import { BasicNodes } from "../Node/BasicNodes";
 
 // <Operator, Precedence>
 const operators = new Map<string, number>([
@@ -31,10 +29,10 @@ export interface ParserConfig {
 
 export class Parser {
 	private readonly config: ParserConfig;
+
 	private tokenStream: TokenStream;
 	private lookahead: Token = {type: TokenType.Add, value: "", index: 0};
 	private endOfInput = false;
-	private result: Node = BasicNodes.Zero();
 
 	private functions = new Set<Function>();
 	private variables = new Set<string>();
@@ -50,17 +48,10 @@ export class Parser {
 
 	parse(input: string) {
 		this.reset();
-
 		this.tokenStream.tokenize(input);
-
 		this.lookahead = this.tokenStream.nextToken();
 
-		const result = this.expression();
-		this.result = postProcess(result);
-		this.result = flat(this.result);
-		this.result = complexLiterals(this.result);
-
-		return this.result;
+		return this.expression();
 	}
 
 	reset() {
@@ -90,8 +81,8 @@ export class Parser {
 		return token;
 	}
 
-	private expression(precedence: number = 0): PostProcNode {
-		let left: PostProcNode = this.prefix();
+	private expression(precedence: number = 0) {
+		let left = this.prefix();
 
 		while(precedence < getPrecedence(this.lookahead)) {
 			left = this.mixfix(left, this.lookahead.type);
@@ -107,26 +98,23 @@ export class Parser {
 		return expression;
 	}
 
-	private listExpression(): PostProcList {
+	private listExpression() {
 		const args = this.seperatedExpression(TokenType.LeftCurlyBracket);
 
-		return {
-			type: PostProcType.List,
-			args: args,
-		};
+		return BasicNodes.List(...args);
 	}
 
-	private tensorExpression(): PostProcTensor {
+	private tensorExpression() {
 		const args = this.seperatedExpression(TokenType.LeftSquareBracket);
 
 		const structure = TensorParser.analyzeTensorStructure(args);
 
-		return PostProc.Tensor(args, structure.shape);
+		return BasicNodes.Tensor(args, structure.shape);
 	}
 
 	private unaryExpression() {
 		this.eat(TokenType.Subtract);
-		return PostProc.Unary(this.expression(getPrecedence("unary")));
+		return BasicNodes.Negative(this.expression(getPrecedence("unary")));
 	}
 
 	private functionExpression() {
@@ -145,7 +133,7 @@ export class Parser {
 			}
 		});
 
-		return PostProc.Function(name, args);
+		return BasicNodes.Function(name, ...args);
 	}
 
 	private seperatedExpression(start: TokenType) {
@@ -166,7 +154,7 @@ export class Parser {
 			});
 
 		let loopCounter = 0;
-		const args: PostProcNode[] = [];
+		const args: Node[] = [];
 
 		while(this.lookahead.type !== endingType) {
 			loopCounter++;
@@ -186,11 +174,11 @@ export class Parser {
 		return args;
 	}
 
-	private absoluteExpression(): PostProcNode {
+	private absoluteExpression() {
 		this.eat(TokenType.Absolute);
 		const expression = this.expression();
 		this.eat(TokenType.Absolute);
-		return PostProc.Absolute(expression);
+		return BasicNodes.Absolute(expression);
 	}
 
 	private identifier() {
@@ -198,13 +186,13 @@ export class Parser {
 
 		const variable = this.eat(TokenType.Identifier);
 		if(this.constants.has(variable.value)) {
-			return PostProc.Constant(variable.value);
+			return BasicNodes.Constant(variable.value);
 		} else {
-			return PostProc.Variable(variable.value);
+			return BasicNodes.Variable(variable.value);
 		}
 	}
 
-	private prefix(): PostProcNode {
+	private prefix(): Node {
 		switch(this.lookahead.type) {
 			case TokenType.LeftParenthesis:
 				return this.parenthesizedExpression();
@@ -219,11 +207,10 @@ export class Parser {
 			case TokenType.Subtract:
 				return this.unaryExpression();
 			case TokenType.Literal:
-				return PostProc.Literal(this.eat(TokenType.Literal));
+				return BasicNodes.Literal(tonumber(this.eat(TokenType.Literal).value)!);
 			case TokenType.Add:
 				this.eat(TokenType.Add);
 				return this.expression(getPrecedence("unary"));
-
 			case TokenType.RightParenthesis:
 				this.unexpectedTokenError("Unexpected right parenthesis, missing left parenthesis or expression");
 				break;
@@ -257,23 +244,23 @@ export class Parser {
 		});
 	}
 
-	private mixfix(leftNode: PostProcNode, operatorType: TokenType): PostProcNode {
+	private mixfix(leftNode: Node, operatorType: TokenType): Node {
 		const token = this.eat(operatorType);
 		const newPrecedence = getPrecedence(token);
 
 		switch(token.type) {
 			case TokenType.Add:
-				return PostProc.Binary(PostProcType.Add, leftNode, this.expression(newPrecedence));
+				return BasicNodes.Add(leftNode, this.expression(newPrecedence));
 			case TokenType.Subtract:
-				return PostProc.Binary(PostProcType.Subtract, leftNode, this.expression(newPrecedence));
+				return BasicNodes.Subtract(leftNode, this.expression(newPrecedence));
 			case TokenType.Multiply:
-				return PostProc.Binary(PostProcType.Multiply, leftNode, this.expression(newPrecedence));
+				return BasicNodes.Multiply(leftNode, this.expression(newPrecedence));
 			case TokenType.Divide:
-				return PostProc.Binary(PostProcType.Divide, leftNode, this.expression(newPrecedence));
+				return BasicNodes.Divide(leftNode, this.expression(newPrecedence));
 			case TokenType.Exponentiation:
-				return PostProc.Binary(PostProcType.Exponentiation, leftNode, this.expression(newPrecedence - 1));
+				return BasicNodes.Exponentiation(leftNode, this.expression(newPrecedence - 1));
 			case TokenType.Factorial:
-				return PostProc.Factorial(leftNode);
+				return BasicNodes.Factorial(leftNode);
 		}
 
 		throw new Error(ErrorType.Parser, {

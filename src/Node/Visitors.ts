@@ -15,7 +15,7 @@ import {
 	Tensor,
 	Variable,
 } from "../Typescript/Node";
-
+import { Nodes, NodeTests } from "./NodeUtils";
 
 export abstract class BaseASTVisitor implements ASTVisitor {
 	Visit(node: Node): Node {
@@ -101,5 +101,35 @@ export class FlatteningVisitor extends BaseASTVisitor {
 		super();
 	}
 
-	//TODO: implement flattening
+	VisitAdd(node: Add): Node {
+		const nodes: Node[] = [];
+
+		node.args.forEach(arg => {
+			arg = this.Visit(arg);
+
+			if(NodeTests.Add(arg)) {
+				arg.args.forEach(arg => nodes.push(arg));
+			} else {
+				nodes.push(arg);
+			}
+		});
+
+		return Nodes.Add(...nodes);
+	}
+
+	VisitMultiply(node: Multiply): Node {
+		const nodes: Node[] = [];
+
+		node.args.forEach(arg => {
+			arg = this.Visit(arg);
+
+			if(NodeTests.Add(arg)) {
+				arg.args.forEach(arg => nodes.push(arg));
+			} else {
+				nodes.push(arg);
+			}
+		});
+
+		return Nodes.Multiply(...nodes);
+	}
 }

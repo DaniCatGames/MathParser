@@ -131,7 +131,7 @@ export interface ASTVisitor<T = Node> {
 export interface Phase {
 	name: string;
 	visitor: ASTVisitor;
-	enabled: boolean;
+	enabled?: boolean;
 	runBefore?: string[];
 	runAfter?: string[];
 }

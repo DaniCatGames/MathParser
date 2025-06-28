@@ -16,22 +16,14 @@ import {
 } from "../Typescript/Node";
 import { Complex } from "../Typescript/Math";
 import { Nodes } from "./NodeUtils";
+import { ComplexUtils } from "../Math/Symbolic/Complex";
 
 export class BasicNodes {
 	static Literal(value: number | Complex): Literal {
 		if(typeIs(value, "number")) {
 			return {
 				type: NodeType.Literal,
-				number: {
-					real: {
-						numerator: value,
-						denominator: 1,
-					},
-					imaginary: {
-						numerator: 0,
-						denominator: 1,
-					},
-				},
+				number: ComplexUtils.FromNumber(value),
 			};
 		} else {
 			return {

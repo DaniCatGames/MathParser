@@ -1,7 +1,7 @@
-import { PostProcNode, PostProcType } from "../Typescript/Parsing";
+import { Node, NodeType } from "../Typescript/Node";
 
 export class TensorParser {
-	static analyzeTensorStructure(args: PostProcNode[]): { shape: number[], isValidTensor: boolean } {
+	static analyzeTensorStructure(args: Node[]): { shape: number[], isValidTensor: boolean } {
 		if(args.size() === 0) {
 			return {shape: [0], isValidTensor: false};
 		}
@@ -12,12 +12,12 @@ export class TensorParser {
 		return {shape, isValidTensor: isValid};
 	}
 
-	private static calculateShape(args: PostProcNode[]): number[] {
+	private static calculateShape(args: Node[]): number[] {
 		const shape: number[] = [args.size()];
 
 		if(args.size() > 0) {
 			const firstElement = args[0];
-			if(firstElement.type === PostProcType.Tensor) {
+			if(firstElement.type === NodeType.Tensor) {
 				if(!firstElement) {
 					shape.push(0);
 				} else {
@@ -30,17 +30,17 @@ export class TensorParser {
 		return shape;
 	}
 
-	private static validateTensorShape(args: PostProcNode[], expectedShape: number[], currentDepth: number): boolean {
+	private static validateTensorShape(args: Node[], expectedShape: number[], currentDepth: number = 0): boolean {
 		if(args.size() !== expectedShape[currentDepth]) {
 			return false;
 		}
 
 		if(currentDepth === expectedShape.size() - 1) {
-			return args.every(arg => arg.type !== PostProcType.Tensor);
+			return args.every(arg => arg.type !== NodeType.Tensor);
 		}
 
 		return args.every(arg => {
-			if(arg.type !== PostProcType.Tensor) return false;
+			if(arg.type !== NodeType.Tensor) return false;
 			return this.validateTensorShape(
 				arg.args,
 				expectedShape,

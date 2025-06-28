@@ -1,10 +1,9 @@
-import { PostProcNode } from "../../Typescript/Parsing";
 import { Node, Phase } from "../../Typescript/Node";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { arrayFromMap } from "../../Polyfill/Array";
-import { PostProcVisitor } from "./BaseVisitors";
-import { ComplexVisitor, FunctionVisitor } from "./NodeVisitors";
+import { ComplexVisitor, FunctionVisitor } from "./Visitors";
 import { PostProcessorFunctions } from "../../Math/Symbolic/MathFunctions";
+import { FlatteningVisitor } from "../../Node/Visitors";
 
 export class PostProcessingPipeline {
 	private phases: Map<string, Phase> = new Map();
@@ -17,14 +16,18 @@ export class PostProcessingPipeline {
 		this.addPhase({
 			name: "ComplexVariableConverter",
 			visitor: new ComplexVisitor(),
-			enabled: true,
 		});
 
 		this.addPhase({
 			name: "FunctionConverter",
 			visitor: new FunctionVisitor(PostProcessorFunctions),
-			enabled: true,
 			runAfter: ["ComplexVariableConverter"],
+		});
+
+		this.addPhase({
+			name: "Flattening",
+			visitor: new FlatteningVisitor(),
+			runAfter: ["FunctionConverter"],
 		});
 	}
 
@@ -56,24 +59,14 @@ export class PostProcessingPipeline {
 		}
 	}
 
-	process(node: PostProcNode): Node {
-		const processed = this.processPostProc(node);
-		return this.processTransform(processed);
-	}
-
-	private processPostProc(node: PostProcNode): Node {
-		const PostProcPhase = new PostProcVisitor();
-		return PostProcPhase.Visit(node);
-	}
-
-	private processTransform(node: Node): Node {
+	process(node: Node): Node {
 		const ordered = this.getExecutionOrder(arrayFromMap(this.phases));
 		let current = node;
 
 		for(const name of ordered) {
 			const phase = this.phases.get(name)!;
 
-			if(!phase.enabled) continue;
+			if(phase.enabled === false) continue;
 
 			try {
 				current = phase.visitor.Visit(current);

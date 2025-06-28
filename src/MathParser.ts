@@ -12,12 +12,14 @@ import {
 import { BasicNodes } from "./Node/BasicNodes";
 import { Error } from "./Typescript/Error";
 import { ExtendedMath } from "./Math/FloatingPoint/ExtendedMath";
+import { PostProcessingPipeline } from "./Parse/PostProcessing/PostProcessor";
 
 export class MathParser {
 	private parser: Parser;
 	private patternMatcher: PatternMatcher;
 	private simplifier: Simplifier;
 	private evaluator: Evaluator;
+	private postProcessor: PostProcessingPipeline;
 
 	functions: Function[] = [];
 	variables: { [variable: string]: number } = {};
@@ -28,6 +30,7 @@ export class MathParser {
 		this.patternMatcher = new PatternMatcher();
 		this.simplifier = new Simplifier();
 		this.evaluator = new Evaluator();
+		this.postProcessor = new PostProcessingPipeline();
 		this.setupIdentifiers();
 	}
 
@@ -72,7 +75,8 @@ export class MathParser {
 
 	parse(equation: string): Node | Error {
 		try {
-			return this.parser.parse(equation);
+			const parsed = this.parser.parse(equation);
+			return this.postProcessor.process(parsed);
 		} catch(error) {
 			return error as Error;
 		}
@@ -85,7 +89,6 @@ export class MathParser {
 			return error as Error;
 		}
 	}
-
 
 	private setupIdentifiers() {
 		this.addFunctions(...MathFunctions);
