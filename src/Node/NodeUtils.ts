@@ -71,36 +71,6 @@ export class NodeUtils {
 		} as T;
 	}
 
-	static Multiply(...nodes: Node[]): Node {
-		const combined = this.CombineLiterals(NodeType.Add, ...nodes);
-
-		if(combined.size() === 1) {
-			return combined[0];
-		} else {
-			return this.QuickFlat({
-				type: NodeType.Add,
-				args: combined,
-			});
-		}
-	}
-
-	static Add(...nodes: Node[]): Node {
-		const combined = this.CombineLiterals(NodeType.Add, ...nodes);
-
-		if(combined.size() === 1) {
-			return combined[0];
-		} else {
-			return this.QuickFlat({
-				type: NodeType.Add,
-				args: combined,
-			});
-		}
-	}
-
-	static Divide(node1: Node, node2: Node): Node {
-		return this.Multiply(node1, Nodes.Inverse(node2));
-	}
-
 	static CombineLiterals(nodeType: NodeType.Add | NodeType.Multiply, ...nodes: Node[]): Node[] {
 		const args: Node[] = [];
 		const literals: Literal[] = [];
@@ -125,11 +95,42 @@ export class NodeUtils {
 }
 
 export class Nodes {
+	static Multiply(...nodes: Node[]): Node {
+		const combined = NodeUtils.CombineLiterals(NodeType.Add, ...nodes);
+
+		if(combined.size() === 1) {
+			return combined[0];
+		} else {
+			return NodeUtils.QuickFlat({
+				type: NodeType.Add,
+				args: combined,
+			});
+		}
+	}
+
+	static Add(...nodes: Node[]): Node {
+		const combined = NodeUtils.CombineLiterals(NodeType.Add, ...nodes);
+
+		if(combined.size() === 1) {
+			return combined[0];
+		} else {
+			return NodeUtils.QuickFlat({
+				type: NodeType.Add,
+				args: combined,
+			});
+		}
+	}
+
+	static Divide(node1: Node, node2: Node): Node {
+		return this.Multiply(node1, Nodes.Inverse(node2));
+	}
+
 	static Inverse(node: Node) {
 		if(node.type === NodeType.Exponentiation) {
-			const newExp = NodeUtils.Multiply(node.args[1], BasicNodes.NegativeOne());
+			const newExp = this.Multiply(node.args[1], BasicNodes.NegativeOne());
 
-			if(NodeTests.Zero(newExp)) return node.args[0];
+			if(NodeTests.Zero(newExp)) return BasicNodes.Zero();
+			else if(NodeTests.One(newExp)) return node.args[0];
 			else return BasicNodes.Exponentiation(node.args[0], newExp);
 		} else {
 			return BasicNodes.Exponentiation(node, BasicNodes.NegativeOne());
@@ -204,5 +205,9 @@ export class NodeTests {
 
 	static Zero(node: Node) {
 		return this.Literal(node) && ComplexUtils.Equal(node.number, ComplexUtils.Zero());
+	}
+
+	static One(node: Node) {
+		return this.Literal(node) && ComplexUtils.Equal(node.number, ComplexUtils.One());
 	}
 }

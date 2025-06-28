@@ -82,6 +82,10 @@ export class ComplexUtils {
 		return this.FromNumber(0);
 	}
 
+	static One() {
+		return this.FromNumber(1);
+	}
+
 	static OneI() {
 		return this.FromNumber(0, 1);
 	}

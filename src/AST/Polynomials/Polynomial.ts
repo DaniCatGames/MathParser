@@ -3,7 +3,7 @@ import { BasicNodes } from "../../Node/BasicNodes";
 import { Node } from "../../Typescript/Node";
 import { Polynomial, PolynomialTerm } from "../../Typescript/Polynomials";
 import { Error, ErrorType } from "../../Typescript/Error";
-import { NodeTests, NodeUtils } from "../../Node/NodeUtils";
+import { Nodes, NodeTests } from "../../Node/NodeUtils";
 
 export class PolynomialUtils {
 	static Add(poly1: Polynomial, poly2: Polynomial) {
@@ -206,7 +206,7 @@ export class PolynomialUtils {
 
 				map.set(signature, {
 					...previous,
-					coefficient: NodeUtils.Add(previous.coefficient, term.coefficient),
+					coefficient: Nodes.Add(previous.coefficient, term.coefficient),
 				});
 			} else {
 				map.set(signature, term);
@@ -221,7 +221,7 @@ export class PolynomialUtils {
 	}
 
 	private static MultiplyTerms(term1: PolynomialTerm, term2: PolynomialTerm): PolynomialTerm {
-		const newCoefficient = NodeUtils.Multiply(term1.coefficient, term2.coefficient);
+		const newCoefficient = Nodes.Multiply(term1.coefficient, term2.coefficient);
 		const newVariables = new Map<string, number>();
 
 		const alreadyProcessed = new Set<string>();
@@ -245,7 +245,7 @@ export class PolynomialUtils {
 	}
 
 	private static DivideTerms(dividend: PolynomialTerm, divisor: PolynomialTerm): PolynomialTerm {
-		const newCoeff = NodeUtils.Divide(dividend.coefficient, divisor.coefficient);
+		const newCoeff = Nodes.Divide(dividend.coefficient, divisor.coefficient);
 		const newVars = new Map<string, number>();
 
 		for(const [variable, dividendPower] of dividend.variables) {
@@ -289,7 +289,7 @@ export class PolynomialUtils {
 		return PolynomialAnalyzer.createPolynomial(
 			poly.terms.map(term => ({
 				...term,
-				coefficient: NodeUtils.Divide(term.coefficient, lead),
+				coefficient: Nodes.Divide(term.coefficient, lead),
 			})),
 		);
 	}
