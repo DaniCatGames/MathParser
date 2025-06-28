@@ -15,6 +15,7 @@ import {
 	Variable,
 } from "../Typescript/Node";
 import { Complex } from "../Typescript/Math";
+import { Nodes } from "./NodeUtils";
 
 export class BasicNodes {
 	static Literal(value: number | Complex): Literal {
@@ -64,7 +65,7 @@ export class BasicNodes {
 	static Divide(n1: Node, n2: Node): Multiply {
 		return {
 			type: NodeType.Multiply,
-			args: [n1, this.Exponentiation(n2, this.Literal(-1))],
+			args: [n1, Nodes.Inverse(n2)],
 		};
 	}
 

@@ -2,21 +2,21 @@ import { Complex } from "../../Typescript/Math";
 import { FractionUtils } from "./Fraction";
 
 export class ComplexUtils {
-	static add(a: Complex, b: Complex): Complex {
+	static Add(a: Complex, b: Complex): Complex {
 		return {
 			real: FractionUtils.Add(a.real, b.real),
 			imaginary: FractionUtils.Add(a.imaginary, b.imaginary),
 		};
 	}
 
-	static subtract(a: Complex, b: Complex): Complex {
+	static Subtract(a: Complex, b: Complex): Complex {
 		return {
 			real: FractionUtils.Subtract(a.real, b.real),
 			imaginary: FractionUtils.Subtract(a.imaginary, b.imaginary),
 		};
 	}
 
-	static multiply(a: Complex, b: Complex): Complex {
+	static Multiply(a: Complex, b: Complex): Complex {
 		const ac = FractionUtils.Multiply(a.real, b.real);
 		const bd = FractionUtils.Multiply(a.imaginary, b.imaginary);
 		const ad = FractionUtils.Multiply(a.real, b.imaginary);
@@ -28,7 +28,7 @@ export class ComplexUtils {
 		};
 	}
 
-	static divide(a: Complex, b: Complex): Complex {
+	static Divide(a: Complex, b: Complex): Complex {
 		const numeratorReal = FractionUtils.Add(
 			FractionUtils.Multiply(a.real, b.real),
 			FractionUtils.Multiply(a.imaginary, b.imaginary),
@@ -48,11 +48,11 @@ export class ComplexUtils {
 		};
 	}
 
-	static equal(a: Complex, b: Complex): boolean {
+	static Equal(a: Complex, b: Complex): boolean {
 		return FractionUtils.equal(a.real, b.real) && FractionUtils.equal(a.imaginary, b.imaginary);
 	}
 
-	static fromNumber(real: number, imaginary: number = 0): Complex {
+	static FromNumber(real: number, imaginary: number = 0): Complex {
 		return {
 			real: {
 				numerator: real,
@@ -65,7 +65,7 @@ export class ComplexUtils {
 		};
 	}
 
-	static fromNumbers(realNom: number, realDenom: number, imagNom: number = 0, imagDenom: number = 1): Complex {
+	static FromNumbers(realNom: number, realDenom: number, imagNom: number = 0, imagDenom: number = 1): Complex {
 		return {
 			real: {
 				numerator: realNom,
@@ -78,7 +78,11 @@ export class ComplexUtils {
 		};
 	}
 
-	static zero() {
-		return this.fromNumber(0);
+	static Zero() {
+		return this.FromNumber(0);
+	}
+
+	static OneI() {
+		return this.FromNumber(0, 1);
 	}
 }

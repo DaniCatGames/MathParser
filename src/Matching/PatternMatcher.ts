@@ -104,7 +104,7 @@ export class PatternMatcher {
 		}
 
 		if(pattern.number !== undefined && NodeUtils.HasNumber(node)) {
-			if(!ComplexUtils.equal(node.number, pattern.number)) {
+			if(!ComplexUtils.Equal(node.number, pattern.number)) {
 				return false;
 			}
 		} else if(pattern.number !== undefined && !NodeUtils.HasNumber(node)) {

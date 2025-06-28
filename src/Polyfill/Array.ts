@@ -70,3 +70,11 @@ export function deDuplicate<T extends defined>(array: T[]): T[] {
 		return acc;
 	}, new Array<T>());
 }
+
+export function arrayFromMap<T extends defined>(map: Map<defined, T>): T[] {
+	const result: T[] = [];
+	for(const [_, value] of map) {
+		result.push(value);
+	}
+	return result;
+}

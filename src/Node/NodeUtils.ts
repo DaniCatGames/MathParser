@@ -38,7 +38,7 @@ export class NodeUtils {
 		}
 
 		if(this.HasNumber(a) && this.HasNumber(b)) {
-			if(!ComplexUtils.equal(a.number, b.number)) return false;
+			if(!ComplexUtils.Equal(a.number, b.number)) return false;
 		} else if(this.HasNumber(a) !== this.HasNumber(b)) {
 			return false;
 		}
@@ -137,11 +137,15 @@ export class Nodes {
 	}
 
 	static SquareRoot(node: Node) {
-		return BasicNodes.Exponentiation(node, BasicNodes.Literal(ComplexUtils.fromNumbers(1, 2)));
+		return BasicNodes.Exponentiation(node, BasicNodes.Literal(ComplexUtils.FromNumbers(1, 2)));
 	}
 
 	static Square(node: Node) {
 		return BasicNodes.Exponentiation(node, BasicNodes.Literal(2));
+	}
+
+	static OneI(): Literal {
+		return BasicNodes.Literal(ComplexUtils.OneI());
 	}
 }
 
@@ -199,6 +203,6 @@ export class NodeTests {
 	}
 
 	static Zero(node: Node) {
-		return this.Literal(node) && ComplexUtils.equal(node.number, ComplexUtils.zero());
+		return this.Literal(node) && ComplexUtils.Equal(node.number, ComplexUtils.Zero());
 	}
 }

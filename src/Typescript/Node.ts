@@ -99,3 +99,39 @@ export type Node =
 	| Factorial
 	| Tensor
 	| Constant
+
+export interface ASTVisitor<T = Node> {
+	Visit(node: Node): T;
+
+	VisitLiteral(node: Literal): T;
+
+	VisitVariable(node: Variable): T;
+
+	VisitAdd(node: Add): T;
+
+	VisitMultiply(node: Multiply): T;
+
+	VisitExponentiation(node: Exponentiation): T;
+
+	VisitAbsolute(node: Absolute): T;
+
+	VisitEquals(node: Equals): T;
+
+	VisitFunction(node: Function): T;
+
+	VisitList(node: List): T;
+
+	VisitFactorial(node: Factorial): T;
+
+	VisitTensor(node: Tensor): T;
+
+	VisitConstant(node: Constant): T;
+}
+
+export interface Phase {
+	name: string;
+	visitor: ASTVisitor;
+	enabled: boolean;
+	runBefore?: string[];
+	runAfter?: string[];
+}

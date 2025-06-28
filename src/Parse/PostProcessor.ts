@@ -78,7 +78,7 @@ export function postProcess(node: PostProcNode): Node {
 
 export function complexLiterals(node: Node): Node {
 	if(node.type === NodeType.Variable && node.string === "i") {
-		return BasicNodes.Literal(ComplexUtils.fromNumbers(0, 1, 1, 1));
+		return BasicNodes.Literal(ComplexUtils.FromNumbers(0, 1, 1, 1));
 	} else {
 		const args = NodeUtils.GetArgs(node);
 		if(args !== undefined && NodeUtils.HasArgs(node)) {
