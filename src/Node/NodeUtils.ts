@@ -120,7 +120,7 @@ export class NodeUtils {
 
 export class Nodes {
 	static Multiply(...nodes: Node[]): Node {
-		const combined = NodeUtils.CombineLiterals(NodeType.Add, ...nodes);
+		const combined = NodeUtils.CombineLiterals(NodeType.Multiply, ...nodes);
 
 		if(combined.size() === 1) {
 			return combined[0];
@@ -149,16 +149,33 @@ export class Nodes {
 		return this.Multiply(node1, Nodes.Inverse(node2));
 	}
 
-	static Inverse(node: Node) {
-		if(node.type === NodeType.Exponentiation) {
-			const newExp = this.Multiply(node.args[1], BasicNodes.NegativeOne());
+	static Subtract(node1: Node, node2: Node): Node {
+		return this.Add(node1, this.Multiply(node2, this.NegativeOne()));
+	}
 
-			if(NodeTests.Zero(newExp)) return BasicNodes.Zero();
-			else if(NodeTests.One(newExp)) return node.args[0];
-			else return BasicNodes.Exponentiation(node.args[0], newExp);
+	static Exponentiation(node1: Node, node2: Node): Node {
+		if(NodeTests.Exponentiation(node1)) {
+			node2 = this.Multiply(node1.args[1], node2);
+
+			if(NodeTests.Zero(node2)) return this.Zero();
+			else if(NodeTests.One(node2)) return node1.args[0];
+			else return BasicNodes.Exponentiation(node1.args[0], node2);
 		} else {
-			return BasicNodes.Exponentiation(node, BasicNodes.NegativeOne());
+			if(NodeTests.Zero(node2)) return this.Zero();
+			else if(NodeTests.One(node2)) return node1;
+			else return BasicNodes.Exponentiation(node1, node2);
 		}
+	}
+
+	static Inverse(node: Node) {
+		return this.Exponentiation(node, this.NegativeOne());
+	}
+
+	static Negative(n: Node): Multiply {
+		return {
+			type: NodeType.Multiply,
+			args: [n, this.NegativeOne()],
+		};
 	}
 
 	static SquareRoot(node: Node) {
@@ -171,6 +188,18 @@ export class Nodes {
 
 	static OneI(): Literal {
 		return BasicNodes.Literal(ComplexUtils.OneI());
+	}
+
+	static NegativeOne() {
+		return BasicNodes.Literal(-1);
+	}
+
+	static One() {
+		return BasicNodes.Literal(1);
+	}
+
+	static Zero() {
+		return BasicNodes.Literal(0);
 	}
 }
 

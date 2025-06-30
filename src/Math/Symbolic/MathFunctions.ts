@@ -36,7 +36,7 @@ export const MathFunctions: Function[] = [
 		arguments:
 			1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Function("sin", x));
+			return Nodes.Negative(BasicNodes.Function("sin", x));
 		},
 	},
 	{
@@ -56,7 +56,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(Nodes.Square(BasicNodes.Function("csc", x)));
+			return Nodes.Negative(Nodes.Square(BasicNodes.Function("csc", x)));
 		},
 	},
 	{
@@ -66,7 +66,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Multiply(BasicNodes.Function("sec", x), BasicNodes.Function("tan", x));
+			return Nodes.Multiply(BasicNodes.Function("sec", x), BasicNodes.Function("tan", x));
 		},
 	},
 	{
@@ -76,7 +76,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Multiply(BasicNodes.Function("csc", x), BasicNodes.Function("cot", x)));
+			return Nodes.Negative(Nodes.Multiply(BasicNodes.Function("csc", x), BasicNodes.Function("cot", x)));
 		},
 	},
 	{
@@ -87,7 +87,7 @@ export const MathFunctions: Function[] = [
 		arguments: 1,
 		derivative: ([x]) => {
 			return Nodes.Inverse(Nodes.SquareRoot(
-				BasicNodes.Subtract(BasicNodes.One(), Nodes.Square(x)),
+				Nodes.Subtract(Nodes.One(), Nodes.Square(x)),
 			));
 		},
 	},
@@ -98,8 +98,8 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(Nodes.Inverse(Nodes.SquareRoot(
-				BasicNodes.Subtract(BasicNodes.One(), Nodes.Square(x)),
+			return Nodes.Negative(Nodes.Inverse(Nodes.SquareRoot(
+				Nodes.Subtract(Nodes.One(), Nodes.Square(x)),
 			)));
 		},
 	},
@@ -110,7 +110,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return Nodes.Inverse(BasicNodes.Add(Nodes.Square(x), BasicNodes.One()));
+			return Nodes.Inverse(Nodes.Add(Nodes.Square(x), Nodes.One()));
 		},
 	},
 
@@ -152,7 +152,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(Nodes.Square(BasicNodes.Function("csch", x)));
+			return Nodes.Negative(Nodes.Square(BasicNodes.Function("csch", x)));
 		},
 	},
 	{
@@ -162,7 +162,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Multiply(BasicNodes.Function("sech", x), BasicNodes.Function("tanh", x)));
+			return Nodes.Negative(Nodes.Multiply(BasicNodes.Function("sech", x), BasicNodes.Function("tanh", x)));
 		},
 	},
 	{
@@ -172,7 +172,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 1,
 		derivative: ([x]) => {
-			return BasicNodes.Negative(BasicNodes.Multiply(BasicNodes.Function("csch", x), BasicNodes.Function("coth", x)));
+			return Nodes.Negative(Nodes.Multiply(BasicNodes.Function("csch", x), BasicNodes.Function("coth", x)));
 		},
 	},
 
@@ -194,7 +194,7 @@ export const MathFunctions: Function[] = [
 		},
 		arguments: 2,
 		derivative: ([x, base]) => {
-			return Nodes.Inverse(BasicNodes.Multiply(x, BasicNodes.Function("ln", base)));
+			return Nodes.Inverse(Nodes.Multiply(x, BasicNodes.Function("ln", base)));
 		},
 	},
 ];
@@ -207,7 +207,7 @@ export const PostProcessorFunctions: { fn: FunctionWithoutDerivative, converter:
 			function: () => 0,
 		},
 		converter: ([x]) => {
-			return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Literal(180), BasicNodes.Variable("pi")));
+			return Nodes.Multiply(x, Nodes.Divide(BasicNodes.Literal(180), BasicNodes.Variable("pi")));
 		},
 	}, {
 		fn: {
@@ -216,7 +216,7 @@ export const PostProcessorFunctions: { fn: FunctionWithoutDerivative, converter:
 			function: () => 0,
 		},
 		converter: ([x]) => {
-			return BasicNodes.Multiply(x, BasicNodes.Divide(BasicNodes.Variable("pi"), BasicNodes.Literal(180)));
+			return Nodes.Multiply(x, Nodes.Divide(BasicNodes.Variable("pi"), BasicNodes.Literal(180)));
 		},
 	}, {
 		fn: {

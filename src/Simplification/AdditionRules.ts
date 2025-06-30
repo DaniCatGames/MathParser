@@ -3,8 +3,7 @@ import { SimplificationRule } from "../Typescript/Simplification";
 import { Literal } from "../Typescript/Node";
 import { SpecialNode } from "../Typescript/Match";
 import { LiteralUtils } from "../Node/Literal";
-import { BasicNodes } from "../Node/BasicNodes";
-import { NodeUtils } from "../Node/NodeUtils";
+import { Nodes, NodeUtils } from "../Node/NodeUtils";
 
 const {
 	Add, Multiply, P, Q,
@@ -33,7 +32,7 @@ export const AdditionRules: SimplificationRule[] = [
 		pattern: Add(SpecialNodes.P, Multiply(SpecialNodes.Q, SpecialNodes.P)),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
 		children: (node, nodes) => {
-			return BasicNodes.Multiply(nodes["P"], NodeUtils.AddOne(nodes["Q"]));
+			return Nodes.Multiply(nodes["P"], NodeUtils.AddOne(nodes["Q"]));
 		},
 	},
 
@@ -41,7 +40,7 @@ export const AdditionRules: SimplificationRule[] = [
 		pattern: Add(Multiply(SpecialNodes.Q, SpecialNodes.P), Multiply(SpecialNodes.R, SpecialNodes.P)),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q, SpecialNode.R],
 		children: (node, nodes) => {
-			return BasicNodes.Multiply(nodes["P"], BasicNodes.Add(nodes["Q"], nodes["R"]));
+			return Nodes.Multiply(nodes["P"], Nodes.Add(nodes["Q"], nodes["R"]));
 		},
 	},
 ];

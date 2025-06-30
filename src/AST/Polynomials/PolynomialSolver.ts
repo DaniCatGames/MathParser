@@ -41,22 +41,22 @@ export class PolynomialSolver {
 			});
 		}
 
-		const D = Nodes.SquareRoot(BasicNodes.Subtract(
+		const D = Nodes.SquareRoot(Nodes.Subtract(
 			Nodes.Square(coefficients.b),
-			BasicNodes.Multiply(
+			Nodes.Multiply(
 				BasicNodes.Literal(4),
 				coefficients.a,
 				coefficients.c,
 			),
 		));
-		const negativeB = BasicNodes.Negative(coefficients.b);
-		const low = BasicNodes.Multiply(BasicNodes.Literal(2), coefficients.a);
+		const negativeB = Nodes.Negative(coefficients.b);
+		const low = Nodes.Multiply(BasicNodes.Literal(2), coefficients.a);
 
-		return [BasicNodes.Divide(
-			BasicNodes.Add(negativeB, D),
+		return [Nodes.Divide(
+			Nodes.Add(negativeB, D),
 			low,
-		), BasicNodes.Divide(
-			BasicNodes.Subtract(negativeB, D),
+		), Nodes.Divide(
+			Nodes.Subtract(negativeB, D),
 			low,
 		)];
 	}

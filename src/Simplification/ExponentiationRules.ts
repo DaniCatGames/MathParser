@@ -1,7 +1,7 @@
 import { SimplificationRule } from "../Typescript/Simplification";
 import { SpecialNode } from "../Typescript/Match";
 import { PatternFunctions, Patterns } from "../Matching/Patterns";
-import { BasicNodes } from "../Node/BasicNodes";
+import { Nodes } from "../Node/NodeUtils";
 
 const {
 	Exponentiation,
@@ -15,7 +15,7 @@ export const ExponentiationRules: SimplificationRule[] = [
 	{   // P^0 -> 1
 		pattern: Exponentiation(Wildcard, Zero),
 		requiredNodes: [],
-		node: (_, __) => BasicNodes.One(),
+		node: (_, __) => Nodes.One(),
 	},
 
 	{   // P^1 -> P

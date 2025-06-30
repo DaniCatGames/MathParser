@@ -9,10 +9,10 @@ import {
 	MathFunctions,
 	PostProcessorFunctions,
 } from "./Math/Symbolic/MathFunctions";
-import { BasicNodes } from "./Node/BasicNodes";
 import { Error } from "./Typescript/Error";
 import { ExtendedMath } from "./Math/FloatingPoint/ExtendedMath";
 import { PostProcessingPipeline } from "./Parse/PostProcessing/PostProcessor";
+import { Nodes } from "./Node/NodeUtils";
 
 export class MathParser {
 	private parser: Parser;
@@ -55,7 +55,7 @@ export class MathParser {
 			} else {
 				newFunc = {
 					...func,
-					derivative: () => BasicNodes.Zero(),
+					derivative: () => Nodes.Zero(),
 				};
 			}
 

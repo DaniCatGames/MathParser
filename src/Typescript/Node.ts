@@ -18,10 +18,6 @@ export enum NodeType {
 
 	List = "List",
 	Tensor = "Tensor",
-
-	//Logical Operators
-	NOT = "NOT",
-	AND = "AND",
 }
 
 export type Literal = {

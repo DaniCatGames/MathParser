@@ -1,6 +1,7 @@
 import { Node, Tensor } from "../../Typescript/Node";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { BasicNodes } from "../../Node/BasicNodes";
+import { Nodes } from "../../Node/NodeUtils";
 
 export class TensorUtils {
 	static getTotalElements(tensor: Tensor) {
@@ -142,7 +143,7 @@ export class TensorUtils {
 
 		const resultArgs: Node[] = [];
 		for(let i = 0; i < a.args.size(); i++) {
-			resultArgs.push(BasicNodes.Multiply(a.args[i], b.args[i]));
+			resultArgs.push(Nodes.Multiply(a.args[i], b.args[i]));
 		}
 
 		return BasicNodes.Tensor(resultArgs, [...a.shape]);
@@ -168,7 +169,7 @@ export class TensorUtils {
 	static scalarMultiply(tensor: Tensor, scalar: Tensor): Tensor {
 		const resultArgs: Node[] = [];
 		for(let i = 0; i < tensor.args.size(); i++) {
-			resultArgs.push(BasicNodes.Multiply(tensor.args[i], scalar));
+			resultArgs.push(Nodes.Multiply(tensor.args[i], scalar));
 		}
 
 		return BasicNodes.Tensor(resultArgs, [...tensor.shape]);
@@ -206,7 +207,7 @@ export class TensorUtils {
 					const aIndex = i * colsA + k;
 					const bIndex = k * colsB + j;
 
-					terms.push(BasicNodes.Multiply(a.args[aIndex], b.args[bIndex]));
+					terms.push(Nodes.Multiply(a.args[aIndex], b.args[bIndex]));
 				}
 
 				if(terms.size() === 1) {
@@ -239,7 +240,7 @@ export class TensorUtils {
 
 		const resultArgs: Node[] = [];
 		for(let i = 0; i < a.args.size(); i++) {
-			resultArgs.push(BasicNodes.Multiply(a.args[i], b.args[i]));
+			resultArgs.push(Nodes.Multiply(a.args[i], b.args[i]));
 		}
 
 		if(resultArgs.size() === 1) {
@@ -333,9 +334,9 @@ export class TensorUtils {
 		for(let i = 0; i < size; i++) {
 			for(let j = 0; j < size; j++) {
 				if(i === j) {
-					resultArgs.push(BasicNodes.One());
+					resultArgs.push(Nodes.One());
 				} else {
-					resultArgs.push(BasicNodes.Zero());
+					resultArgs.push(Nodes.Zero());
 				}
 			}
 		}
@@ -348,7 +349,7 @@ export class TensorUtils {
 		const resultArgs: Node[] = [];
 
 		for(let i = 0; i < totalElements; i++) {
-			resultArgs.push(BasicNodes.Zero());
+			resultArgs.push(Nodes.Zero());
 		}
 
 		return BasicNodes.Tensor(resultArgs, shape);
@@ -359,7 +360,7 @@ export class TensorUtils {
 		const resultArgs: Node[] = [];
 
 		for(let i = 0; i < totalElements; i++) {
-			resultArgs.push(BasicNodes.One());
+			resultArgs.push(Nodes.One());
 		}
 
 		return BasicNodes.Tensor(resultArgs, shape);

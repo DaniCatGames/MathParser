@@ -5,6 +5,7 @@ import { Token, TokenType } from "../Typescript/Parsing";
 import { Node } from "../Typescript/Node";
 import { Function } from "../Math/Symbolic/MathFunctions";
 import { BasicNodes } from "../Node/BasicNodes";
+import { Nodes } from "../Node/NodeUtils";
 
 // <Operator, Precedence>
 const operators = new Map<string, number>([
@@ -114,7 +115,7 @@ export class Parser {
 
 	private unaryExpression() {
 		this.eat(TokenType.Subtract);
-		return BasicNodes.Negative(this.expression(getPrecedence("unary")));
+		return Nodes.Negative(this.expression(getPrecedence("unary")));
 	}
 
 	private functionExpression() {

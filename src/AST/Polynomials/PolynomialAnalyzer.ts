@@ -9,8 +9,7 @@ import {
 	SpecialForm,
 } from "../../Typescript/Polynomials";
 import { Add, Exponentiation, Literal, Multiply, Node } from "../../Typescript/Node";
-import { BasicNodes } from "../../Node/BasicNodes";
-import { NodeTests } from "../../Node/NodeUtils";
+import { Nodes, NodeTests } from "../../Node/NodeUtils";
 import { deDuplicate } from "../../Polyfill/Array";
 
 export class PolynomialAnalyzer {
@@ -62,7 +61,7 @@ export class PolynomialAnalyzer {
 	private static parseTerm(node: Node): PolynomialTerm | undefined {
 		if(NodeTests.Variable(node)) {
 			return {
-				coefficient: BasicNodes.One(),
+				coefficient: Nodes.One(),
 				variables: new Map<string, number>().set(node.string, 1),
 				degree: 1,
 			};
@@ -82,12 +81,12 @@ export class PolynomialAnalyzer {
 	};
 
 	private static parseMultiply(node: Multiply): PolynomialTerm | undefined {
-		let coefficient: Node = BasicNodes.One();
+		let coefficient: Node = Nodes.One();
 		const variables = new Map<string, number>;
 
 		for(const arg of node.args) {
 			if(NodeTests.Literal(arg)) {
-				coefficient = BasicNodes.Multiply(coefficient, arg);
+				coefficient = Nodes.Multiply(coefficient, arg);
 			} else if(NodeTests.Variable(arg)) {
 				const power = variables.get(arg.string) || 0;
 				variables.set(arg.string, power + 1);
@@ -120,7 +119,7 @@ export class PolynomialAnalyzer {
 		variables.set(info.variable, info.power);
 
 		return {
-			coefficient: BasicNodes.One(),
+			coefficient: Nodes.One(),
 			variables: variables,
 			degree: info.power,
 		};
@@ -154,8 +153,8 @@ export class PolynomialAnalyzer {
 		const leadingTerms = terms.filter(t => t.degree === maxDegree);
 		const constantTerms = terms.filter(t => t.degree === 0);
 
-		const leadingCoefficient = leadingTerms.size() > 0 ? leadingTerms[0].coefficient : BasicNodes.Zero();
-		const constantTerm = constantTerms.size() > 0 ? constantTerms[0].coefficient : BasicNodes.Zero();
+		const leadingCoefficient = leadingTerms.size() > 0 ? leadingTerms[0].coefficient : Nodes.Zero();
+		const constantTerm = constantTerms.size() > 0 ? constantTerms[0].coefficient : Nodes.Zero();
 
 		return {
 			terms: terms,
@@ -251,7 +250,7 @@ export class PolynomialAnalyzer {
 		if(term) {
 			return term.coefficient;
 		} else {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		}
 	}
 

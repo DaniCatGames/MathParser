@@ -71,7 +71,7 @@ export class BasicNodes {
 	static Subtract(n1: Node, n2: Node): Add {
 		return {
 			type: NodeType.Add,
-			args: [n1, this.Negative(n2)],
+			args: [n1, Nodes.Negative(n2)],
 		};
 	}
 
@@ -87,13 +87,6 @@ export class BasicNodes {
 			type: NodeType.Function,
 			string: func,
 			args: args,
-		};
-	}
-
-	static Negative(n: Node): Multiply {
-		return {
-			type: NodeType.Multiply,
-			args: [n, this.NegativeOne()],
 		};
 	}
 
@@ -147,17 +140,5 @@ export class BasicNodes {
 			args: args,
 			shape: shape,
 		};
-	}
-
-	static NegativeOne() {
-		return this.Literal(-1);
-	}
-
-	static One() {
-		return this.Literal(1);
-	}
-
-	static Zero() {
-		return this.Literal(0);
 	}
 }

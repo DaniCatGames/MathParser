@@ -14,7 +14,7 @@ import {
 import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
-import { NodeUtils } from "../Node/NodeUtils";
+import { Nodes, NodeTests } from "../Node/NodeUtils";
 import { Evaluator } from "./Evaluator";
 import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
 import { PolynomialAnalyzer } from "./Polynomials/PolynomialAnalyzer";
@@ -101,33 +101,33 @@ export class Calculus {
 
 
 	private static literalOrConstant() {
-		return BasicNodes.Zero();
+		return Nodes.Zero();
 	}
 
 	private static variable(node: Variable, variable: string) {
 		if(node.string === variable) {
-			return BasicNodes.One();
+			return Nodes.One();
 		} else {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		}
 	}
 
 	private static add(node: Add, variable: string) {
 		const args = node.args.map(arg => this.derivative(arg, variable));
-		const nonZeroArgs = args.filter(arg => !this.isZero(arg));
+		const nonZeroArgs = args.filter(arg => !NodeTests.Zero(arg));
 
 		if(nonZeroArgs.size() === 0) {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		} else if(nonZeroArgs.size() === 1) {
 			return nonZeroArgs[0];
 		} else {
-			return BasicNodes.Add(...nonZeroArgs);
+			return Nodes.Add(...nonZeroArgs);
 		}
 	}
 
 	private static multiply(node: Multiply, variable: string) {
 		if(node.args.size() === 0) {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		} else if(node.args.size() === 1) {
 			return this.derivative(node.args[0], variable);
 		}
@@ -145,11 +145,11 @@ export class Calculus {
 		}
 
 		if(returnArgs.size() === 0) {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		} else if(returnArgs.size() === 1) {
 			return returnArgs[0];
 		} else {
-			return BasicNodes.Add(...returnArgs);
+			return Nodes.Add(...returnArgs);
 		}
 	}
 
@@ -159,26 +159,26 @@ export class Calculus {
 		const baseDerivative = this.derivative(base, variable);
 		const expDerivative = this.derivative(exp, variable);
 
-		if(this.isZero(baseDerivative) && this.isZero(expDerivative)) {
-			return BasicNodes.Zero();
+		if(NodeTests.Zero(baseDerivative) && NodeTests.Zero(expDerivative)) {
+			return Nodes.Zero();
 		}
 
-		if(this.isZero(expDerivative)) {
-			return BasicNodes.Multiply(
+		if(NodeTests.Zero(expDerivative)) {
+			return Nodes.Multiply(
 				exp,
 				baseDerivative,
-				BasicNodes.Exponentiation(base, BasicNodes.Add(exp, BasicNodes.NegativeOne())),
+				Nodes.Exponentiation(base, Nodes.Add(exp, Nodes.NegativeOne())),
 			);
 		}
 
-		return BasicNodes.Multiply(
-			BasicNodes.Exponentiation(base, exp),
-			BasicNodes.Add(
-				BasicNodes.Multiply(
+		return Nodes.Multiply(
+			Nodes.Exponentiation(base, exp),
+			Nodes.Add(
+				Nodes.Multiply(
 					baseDerivative,
-					BasicNodes.Divide(exp, base),
+					Nodes.Divide(exp, base),
 				),
-				BasicNodes.Multiply(
+				Nodes.Multiply(
 					expDerivative,
 					BasicNodes.Function("ln", base),
 				),
@@ -190,19 +190,19 @@ export class Calculus {
 		const arg = node.args[0];
 		const argDerivative = this.derivative(arg, variable);
 
-		if(this.isZero(argDerivative)) {
-			return BasicNodes.Zero();
+		if(NodeTests.Zero(argDerivative)) {
+			return Nodes.Zero();
 		}
 
-		return BasicNodes.Multiply(
-			BasicNodes.Divide(arg, node),
+		return Nodes.Multiply(
+			Nodes.Divide(arg, node),
 			argDerivative,
 		);
 	};
 
 	private static func(node: Function, variable: string) {
 		if(node.args.size() === 0) {
-			return BasicNodes.Zero();
+			return Nodes.Zero();
 		}
 
 		const argDerivative = this.derivative(node.args[0], variable);
@@ -218,7 +218,7 @@ export class Calculus {
 			});
 		}
 
-		return BasicNodes.Multiply(mathFunction.derivative(node.args), argDerivative);
+		return Nodes.Multiply(mathFunction.derivative(node.args), argDerivative);
 	}
 
 	private static factorial(node: Factorial, variable: string): Node {
@@ -237,10 +237,5 @@ export class Calculus {
 		const args = node.args.map(element => this.derivative(element, variable));
 
 		return BasicNodes.Tensor(args, node.shape);
-	}
-
-	private static isZero(node: Node) {
-		return node.type === NodeType.Literal
-			&& NodeUtils.Equal(node, BasicNodes.Zero());
 	}
 }

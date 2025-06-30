@@ -4,6 +4,7 @@ import { Literal } from "../Typescript/Node";
 import { PatternFunctions, Patterns } from "../Matching/Patterns";
 import { LiteralUtils } from "../Node/Literal";
 import { BasicNodes } from "../Node/BasicNodes";
+import { Nodes } from "../Node/NodeUtils";
 
 const {
 	Multiply, P, Q, Exponentiation, Add,
@@ -17,7 +18,7 @@ export const BasicRules: SimplificationRule[] = [
 	{   // P^0 -> 1
 		pattern: Exponentiation(Wildcard, Zero),
 		requiredNodes: [],
-		node: (_, __) => BasicNodes.One(),
+		node: (_, __) => Nodes.One(),
 	},
 
 	{   // P^1 -> P
@@ -41,7 +42,7 @@ export const BasicRules: SimplificationRule[] = [
 	{   // P * 0 => 0
 		pattern: Multiply(Zero),
 		requiredNodes: [],
-		node: (_, __) => BasicNodes.Zero(),
+		node: (_, __) => Nodes.Zero(),
 	},
 
 	{   // P * 1 => P
@@ -54,7 +55,7 @@ export const BasicRules: SimplificationRule[] = [
 		pattern: Multiply(P(Literal), NegativeOne),
 		requiredNodes: [SpecialNode.P],
 		node: (node, nodes) => {
-			return LiteralUtils.multiplyValues(nodes["P"] as Literal, BasicNodes.NegativeOne());
+			return LiteralUtils.multiplyValues(nodes["P"] as Literal, Nodes.NegativeOne());
 		},
 	},
 

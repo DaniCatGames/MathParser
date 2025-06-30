@@ -16,7 +16,7 @@ export class PolynomialUtils {
 	static Subtract(poly1: Polynomial, poly2: Polynomial) {
 		const negated: PolynomialTerm[] = poly2.terms.map(term => ({
 			...term,
-			coefficient: BasicNodes.Negative(term.coefficient),
+			coefficient: Nodes.Negative(term.coefficient),
 		}));
 
 		const combined = [...poly1.terms, ...negated];
@@ -43,7 +43,7 @@ export class PolynomialUtils {
 	static MultiplyScalar(poly: Polynomial, scalar: Node) {
 		const scaledTerms = poly.terms.map(term => ({
 			...term,
-			coefficient: BasicNodes.Multiply(term.coefficient, scalar),
+			coefficient: Nodes.Multiply(term.coefficient, scalar),
 		}));
 
 		return PolynomialAnalyzer.createPolynomial(scaledTerms);
@@ -139,7 +139,7 @@ export class PolynomialUtils {
 
 		term.variables.forEach((power, vari) => {
 			if(vari === variable) {
-				coeff = BasicNodes.Divide(
+				coeff = Nodes.Divide(
 					coeff,
 					BasicNodes.Literal(power),
 				);
@@ -167,18 +167,18 @@ export class PolynomialUtils {
 
 	static ToNode(poly: Polynomial) {
 		const args = poly.terms.map(term => this.TermToNode(term));
-		return BasicNodes.Add(...args);
+		return Nodes.Add(...args);
 	}
 
 	static TermToNode(term: PolynomialTerm) {
 		const args: Node[] = [term.coefficient];
 		term.variables.forEach((power, variable) => {
-			args.push(BasicNodes.Exponentiation(
+			args.push(Nodes.Exponentiation(
 				BasicNodes.Variable(variable),
 				BasicNodes.Literal(power),
 			));
 		});
-		return BasicNodes.Multiply(
+		return Nodes.Multiply(
 			...args,
 		);
 	}
@@ -192,7 +192,7 @@ export class PolynomialUtils {
 	}
 
 	static Zero() {
-		return this.Constant(BasicNodes.Zero());
+		return this.Constant(Nodes.Zero());
 	}
 
 	private static CombineTerms(terms: PolynomialTerm[]): PolynomialTerm[] {
