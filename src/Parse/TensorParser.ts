@@ -1,4 +1,5 @@
 import { Node, NodeType } from "../Typescript/Node";
+import { TensorUtils } from "../Math/Symbolic/Tensor";
 
 export class TensorParser {
 	static analyzeTensorStructure(args: Node[]): { shape: number[], isValidTensor: boolean } {
@@ -7,7 +8,7 @@ export class TensorParser {
 		}
 
 		const shape = this.calculateShape(args);
-		const isValid = this.validateTensorShape(args, shape, 0);
+		const isValid = TensorUtils.validateTensorShape(args, shape, 0);
 
 		return {shape, isValidTensor: isValid};
 	}
@@ -28,24 +29,5 @@ export class TensorParser {
 		}
 
 		return shape;
-	}
-
-	private static validateTensorShape(args: Node[], expectedShape: number[], currentDepth: number = 0): boolean {
-		if(args.size() !== expectedShape[currentDepth]) {
-			return false;
-		}
-
-		if(currentDepth === expectedShape.size() - 1) {
-			return args.every(arg => arg.type !== NodeType.Tensor);
-		}
-
-		return args.every(arg => {
-			if(arg.type !== NodeType.Tensor) return false;
-			return this.validateTensorShape(
-				arg.args,
-				expectedShape,
-				currentDepth + 1,
-			);
-		});
 	}
 }

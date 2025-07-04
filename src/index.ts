@@ -1,4 +1,3 @@
-export { Calculus } from "./AST/Calculus";
 export { PolynomialAnalyzer } from "./AST/Polynomials/PolynomialAnalyzer";
 export { PolynomialSolver } from "./AST/Polynomials/PolynomialSolver";
 export { Visualizer } from "./AST/Visualizer";

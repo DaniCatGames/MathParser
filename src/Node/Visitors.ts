@@ -13,7 +13,7 @@ import {
 	Node,
 	NodeType,
 	Tensor,
-	Variable,
+	Variable
 } from "../Typescript/Node";
 import { Nodes, NodeTests } from "./NodeUtils";
 
@@ -56,39 +56,66 @@ export abstract class BaseASTVisitor implements ASTVisitor {
 	}
 
 	VisitAdd(node: Add): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitMultiply(node: Multiply): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitExponentiation(node: Exponentiation): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitAbsolute(node: Absolute): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitEquals(node: Equals): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitFunction(node: Function): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitList(node: List): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitFactorial(node: Factorial): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitTensor(node: Tensor): Node {
-		return node;
+		return {
+			...node,
+			args: node.args.map(arg => this.Visit(arg))
+		};
 	}
 
 	VisitConstant(node: Constant): Node {
@@ -131,5 +158,55 @@ export class FlatteningVisitor extends BaseASTVisitor {
 		});
 
 		return Nodes.Multiply(...nodes);
+	}
+}
+
+export class EvaluatorVisitor extends BaseASTVisitor {
+	VisitLiteral(node: Literal): Node {
+		return super.VisitLiteral(node);
+	}
+
+	VisitVariable(node: Variable): Node {
+		return super.VisitVariable(node);
+	}
+
+	VisitAdd(node: Add): Node {
+		return super.VisitAdd(node);
+	}
+
+	VisitMultiply(node: Multiply): Node {
+		return super.VisitMultiply(node);
+	}
+
+	VisitExponentiation(node: Exponentiation): Node {
+		return super.VisitExponentiation(node);
+	}
+
+	VisitAbsolute(node: Absolute): Node {
+		return super.VisitAbsolute(node);
+	}
+
+	VisitEquals(node: Equals): Node {
+		return super.VisitEquals(node);
+	}
+
+	VisitFunction(node: Function): Node {
+		return super.VisitFunction(node);
+	}
+
+	VisitList(node: List): Node {
+		return super.VisitList(node);
+	}
+
+	VisitFactorial(node: Factorial): Node {
+		return super.VisitFactorial(node);
+	}
+
+	VisitTensor(node: Tensor): Node {
+		return super.VisitTensor(node);
+	}
+
+	VisitConstant(node: Constant): Node {
+		return super.VisitConstant(node);
 	}
 }

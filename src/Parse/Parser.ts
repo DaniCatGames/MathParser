@@ -1,13 +1,22 @@
-import { Error, ErrorType } from "../Typescript/Error";
-import { TokenStream } from "./Tokenizing/TokenStream";
-import { TensorParser } from "./TensorParser";
-import { Token, TokenType } from "../Typescript/Parsing";
+import { GrammarRule, ParserContext, Token, TokenType } from "../Typescript/Parsing";
 import { Node } from "../Typescript/Node";
 import { Function } from "../Math/Symbolic/MathFunctions";
-import { BasicNodes } from "../Node/BasicNodes";
-import { Nodes } from "../Node/NodeUtils";
+import { Error, ErrorType } from "../Typescript/Error";
+import { TokenStream } from "./Tokenizing/TokenStream";
 
-// <Operator, Precedence>
+import {
+	AbsoluteValueRule,
+	BinaryOperatorRule,
+	FactorialRule,
+	FunctionCallRule,
+	ListRule,
+	LiteralRule,
+	ParenthesesRule,
+	TensorRule,
+	UnaryOperatorRule,
+	VariableRule
+} from "./Rules";
+
 const operators = new Map<string, number>([
 	["!", 6],
 	["^", 5],
@@ -15,21 +24,13 @@ const operators = new Map<string, number>([
 	["*", 3],
 	["/", 3],
 	["+", 2],
-	["-", 2],
+	["-", 2]
 ]);
 
-const surroundOperators = new Map<TokenType, [TokenType, TokenType]>([
-	[TokenType.LeftParenthesis, [TokenType.RightParenthesis, TokenType.Comma]],
-	[TokenType.LeftCurlyBracket, [TokenType.RightCurlyBracket, TokenType.Comma]],
-	[TokenType.LeftSquareBracket, [TokenType.RightSquareBracket, TokenType.Comma]],
-]);
-
-export interface ParserConfig {
-	maxListSize: number;
-}
-
-export class Parser {
-	private readonly config: ParserConfig;
+export class Parser implements ParserContext {
+	private rules: Map<string, GrammarRule> = new Map();
+	private prefixRules: GrammarRule[] = [];
+	private mixfixRules: GrammarRule[] = [];
 
 	private tokenStream: TokenStream;
 	private lookahead: Token = {type: TokenType.Add, value: "", index: 0};
@@ -39,262 +40,55 @@ export class Parser {
 	private variables = new Set<string>();
 	private constants = new Set<string>();
 
-	constructor(config?: Partial<ParserConfig>) {
-		this.config = {
-			maxListSize: 200,
-			...config,
-		};
+	private maxListSize = 200;
+
+	constructor() {
 		this.tokenStream = new TokenStream("");
+		this.setupDefault();
 	}
 
 	parse(input: string) {
-		this.reset();
+		this.tokenStream.reset();
 		this.tokenStream.tokenize(input);
 		this.lookahead = this.tokenStream.nextToken();
-
+		this.endOfInput = false;
 		return this.expression();
 	}
 
-	reset() {
-		this.tokenStream.reset();
-		this.endOfInput = false;
+	private setupDefault() {
+		this.addRule(new LiteralRule());
+		this.addRule(new ParenthesesRule());
+		this.addRule(new BinaryOperatorRule());
+		this.addRule(new UnaryOperatorRule());
+		this.addRule(new FunctionCallRule());
+		this.addRule(new VariableRule());
+		this.addRule(new TensorRule());
+		this.addRule(new ListRule());
+		this.addRule(new AbsoluteValueRule());
+		this.addRule(new FactorialRule());
 	}
 
-	private eat(tokenType: TokenType) {
-		if(this.endOfInput) throw new Error(ErrorType.Parser, {
-			message: "Unexpected end of input",
-		});
-
-		const token = this.lookahead;
-
-		if(token.type !== tokenType) throw new Error(ErrorType.Parser, {
-			message: "Unexpected token",
-			expected: tokenType,
-			got: token.type,
-		});
-
-		try {
-			this.lookahead = this.tokenStream.nextToken();
-		} catch(_) {
-			this.endOfInput = true;
-		}
-
-		return token;
-	}
-
-	private expression(precedence: number = 0) {
-		let left = this.prefix();
-
-		while(precedence < getPrecedence(this.lookahead)) {
-			left = this.mixfix(left, this.lookahead.type);
-		}
-
-		return left;
-	}
-
-	private parenthesizedExpression() {
-		this.eat(TokenType.LeftParenthesis);
-		const expression = this.expression();
-		this.eat(TokenType.RightParenthesis);
-		return expression;
-	}
-
-	private listExpression() {
-		const args = this.seperatedExpression(TokenType.LeftCurlyBracket);
-
-		return BasicNodes.List(...args);
-	}
-
-	private tensorExpression() {
-		const args = this.seperatedExpression(TokenType.LeftSquareBracket);
-
-		const structure = TensorParser.analyzeTensorStructure(args);
-
-		return BasicNodes.Tensor(args, structure.shape);
-	}
-
-	private unaryExpression() {
-		this.eat(TokenType.Subtract);
-		return Nodes.Negative(this.expression(getPrecedence("unary")));
-	}
-
-	private functionExpression() {
-		const name = this.eat(TokenType.Identifier).value;
-		const args = this.seperatedExpression(TokenType.LeftParenthesis);
-
-		let foundFunction: Function | undefined;
-		for(const [func, _] of pairs(this.functions)) {
-			if(func.names.includes(name)) foundFunction = func;
-		}
-
-		if(!foundFunction) {
+	addRule(rule: GrammarRule) {
+		if(this.rules.has(rule.name)) {
 			throw new Error(ErrorType.Parser, {
-				message: `Unknown function: ${name}`,
-				functionName: name,
+				message: `Rule '${rule.name}' already exists`
 			});
 		}
 
-		if(foundFunction.arguments !== args.size()) {
-			throw new Error(ErrorType.Parser, {
-				message: "Too many/few arguments for this function",
-				args: args,
-				argumentAmount: args.size(),
-				requiredArgs: foundFunction.arguments,
-			});
-		}
+		this.rules.set(rule.name, rule);
 
-		return BasicNodes.Function(name, ...args);
+		if("mixfix" in rule) this.mixfixRules.push(rule);
+		if("prefix" in rule) this.prefixRules.push(rule);
+
+		this.prefixRules.sort((a, b) => a.priority > b.priority);
+		this.mixfixRules.sort((a, b) => a.priority > b.priority);
 	}
 
-	private seperatedExpression(start: TokenType) {
-		this.eat(start);
+	//TODO remove/disable/enable rules
 
-		let endingType: TokenType | undefined;
-		let argumentSeparator: TokenType | undefined;
-		surroundOperators.forEach((value, key) => {
-			if(key === start) {
-				endingType = value[0];
-				argumentSeparator = value[1];
-			}
-		});
-
-		if(endingType === undefined || argumentSeparator === undefined)
-			throw new Error(ErrorType.Parser, {
-				message: "Error parsing seperated expression",
-			});
-
-		let loopCounter = 0;
-		const args: Node[] = [];
-
-		while(this.lookahead.type !== endingType) {
-			loopCounter++;
-			if(loopCounter > this.config.maxListSize) throw new Error(ErrorType.Parser, {
-				message: "Max list size exceeded",
-			});
-
-			args.push(this.expression());
-
-			if(this.lookahead.type !== argumentSeparator) break;
-
-			this.eat(TokenType.Comma);
-		}
-
-		this.eat(endingType);
-
-		return args;
-	}
-
-	private absoluteExpression() {
-		this.eat(TokenType.Absolute);
-		const expression = this.expression();
-		this.eat(TokenType.Absolute);
-		return BasicNodes.Absolute(expression);
-	}
-
-	private identifier() {
-		if(this.isFunction(this.lookahead.value)) return this.functionExpression();
-
-		const variable = this.eat(TokenType.Identifier);
-		if(this.constants.has(variable.value)) {
-			return BasicNodes.Constant(variable.value);
-		} else {
-			return BasicNodes.Variable(variable.value);
-		}
-	}
-
-	private prefix(): Node {
-		switch(this.lookahead.type) {
-			case TokenType.LeftParenthesis:
-				return this.parenthesizedExpression();
-			case TokenType.LeftSquareBracket:
-				return this.tensorExpression();
-			case TokenType.LeftCurlyBracket:
-				return this.listExpression();
-			case TokenType.Absolute:
-				return this.absoluteExpression();
-			case TokenType.Identifier:
-				return this.identifier();
-			case TokenType.Subtract:
-				return this.unaryExpression();
-			case TokenType.Literal:
-				return BasicNodes.Literal(tonumber(this.eat(TokenType.Literal).value)!);
-			case TokenType.Add:
-				this.eat(TokenType.Add);
-				return this.expression(getPrecedence("unary"));
-			case TokenType.RightParenthesis:
-				this.unexpectedTokenError("Unexpected right parenthesis, missing left parenthesis or expression");
-				break;
-			case TokenType.RightSquareBracket:
-				this.unexpectedTokenError("Unexpected right square bracket, missing left square bracket or expression");
-				break;
-			case TokenType.RightCurlyBracket:
-				this.unexpectedTokenError("Unexpected right curly bracket, missing left curly bracket or expression");
-				break;
-			case TokenType.Comma:
-				this.unexpectedTokenError("Unexpected comma, missing expression before comma");
-				break;
-			case TokenType.Multiply:
-				this.unexpectedTokenError("Unexpected multiplication, missing expression before multiplication");
-				break;
-			case TokenType.Divide:
-				this.unexpectedTokenError("Unexpected division, missing expression before division");
-				break;
-			case TokenType.Exponentiation:
-				this.unexpectedTokenError("Unexpected exponentiation, missing expression before exponentiation");
-				break;
-			case TokenType.Factorial:
-				this.unexpectedTokenError("Unexpected factorial, missing expression before factorial");
-				break;
-		}
-
-		throw new Error(ErrorType.Parser, {
-			message: "Unknown prefix token",
-			type: this.lookahead.type,
-			value: this.lookahead.value,
-		});
-	}
-
-	private mixfix(leftNode: Node, operatorType: TokenType): Node {
-		const token = this.eat(operatorType);
-		const newPrecedence = getPrecedence(token);
-
-		switch(token.type) {
-			case TokenType.Add:
-				return BasicNodes.Add(leftNode, this.expression(newPrecedence));
-			case TokenType.Subtract:
-				return BasicNodes.Subtract(leftNode, this.expression(newPrecedence));
-			case TokenType.Multiply:
-				return BasicNodes.Multiply(leftNode, this.expression(newPrecedence));
-			case TokenType.Divide:
-				return BasicNodes.Divide(leftNode, this.expression(newPrecedence));
-			case TokenType.Exponentiation:
-				return BasicNodes.Exponentiation(leftNode, this.expression(newPrecedence - 1));
-			case TokenType.Factorial:
-				return BasicNodes.Factorial(leftNode);
-		}
-
-		throw new Error(ErrorType.Parser, {
-			message: "Unknown mixfix token",
-			type: token.type,
-			value: token.value,
-		});
-	}
-
-	private isFunction(input: string) {
-		let has = false;
-		this.functions.forEach((func) => {
-			if(func.names.includes(input)) has = true;
-		});
-		return has;
-	}
-
-	private unexpectedTokenError(message: string) {
-		throw new Error(ErrorType.Parser, {
-			message: message,
-			expected: "Expression",
-			got: this.lookahead.type,
-			atIndex: this.lookahead.index,
-		});
+	isEnabled(name: string) {
+		const rule = this.rules.get(name);
+		return rule ? rule.enabled : false;
 	}
 
 	addVariable(variable: string) {
@@ -314,9 +108,120 @@ export class Parser {
 			this.tokenStream.addFunction(name);
 		});
 	}
-}
 
-function getPrecedence(token: Token | "unary"): number {
-	const operator = (token === "unary") ? operators.get(token) : operators.get(token.value);
-	return operator ? operator : 0;
+	eat(tokenType?: TokenType, errorMessage?: string) {
+		if(this.endOfInput) throw new Error(ErrorType.Parser, {
+			message: errorMessage || "Unexpected end of input"
+		});
+
+		const token = this.lookahead;
+
+		if(tokenType && token.type !== tokenType) throw new Error(ErrorType.Parser, {
+			message: errorMessage || "Unexpected token",
+			expected: tokenType,
+			got: token.type
+		});
+
+		try {
+			this.lookahead = this.tokenStream.nextToken();
+		} catch(_) {
+			this.endOfInput = true;
+		}
+
+		return token;
+	}
+
+	peek() {
+		return this.lookahead;
+	}
+
+	expression(precedence: number = 0): Node {
+		let left = this.prefix();
+
+		while(precedence < this.getPrecedence(this.lookahead)) {
+			left = this.mixfix(left);
+		}
+
+		return left;
+	}
+
+	private prefix() {
+		for(const rule of this.prefixRules) {
+			if(!rule.enabled) continue;
+
+			if(rule.canStartWith(this.lookahead, this) && rule.prefix) {
+				return rule.prefix(this);
+			}
+		}
+
+		throw new Error(ErrorType.Parser, {
+			message: `No prefix rule found for token: ${this.lookahead.value}`,
+			token: this.lookahead
+		});
+	}
+
+	private mixfix(left: Node) {
+
+		for(const rule of this.mixfixRules) {
+			if(!rule.enabled) continue;
+
+			if(rule.canStartWith(this.lookahead, this) && rule.mixfix) {
+				return rule.mixfix(this, left);
+			}
+		}
+
+		throw new Error(ErrorType.Parser, {
+			message: `No mixfix rule found for token: ${this.lookahead.value}`,
+			token: this.lookahead
+		});
+	}
+
+	parseList(startType: TokenType, endType: TokenType, separator: TokenType): Node[] {
+		this.eat(startType);
+
+		let loopCounter = 0;
+		const args: Node[] = [];
+
+		while(this.lookahead.type !== endType) {
+			loopCounter++;
+			if(loopCounter > this.maxListSize) throw new Error(ErrorType.Parser, {
+				message: "Max list size exceeded"
+			});
+
+			args.push(this.expression());
+
+			if(this.lookahead.type !== separator) break;
+			this.eat(TokenType.Comma);
+		}
+
+		this.eat(endType);
+		return args;
+	}
+
+	hasMoreTokens(): boolean {
+		return !this.endOfInput;
+	}
+
+	isFunction(name: string): boolean {
+		for(const func of this.functions) {
+			if(func.names.includes(name)) return true;
+		}
+		return false;
+	}
+
+	findFunction(name: string): Function | undefined {
+		for(const func of this.functions) {
+			if(func.names.includes(name)) return func;
+		}
+		return undefined;
+	}
+
+	isConstant(name: string): boolean {
+		return this.constants.has(name);
+	}
+
+	getPrecedence(token: Token | "unary"): number {
+		const precedence = (token === "unary") ? operators.get(token) : operators.get(token.value);
+		return precedence ? precedence : 0;
+	}
 }

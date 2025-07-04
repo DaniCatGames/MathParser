@@ -1,6 +1,7 @@
 import { Error, ErrorType } from "../Typescript/Error";
 import { DetectionNode, MatchNode, Pattern } from "../Typescript/Match";
 import { flatMap, slice } from "../Polyfill/Array";
+import { NodeSerializer } from "../Node/NodeSerializer";
 
 class ExpansionCache {
 	private readonly cache = new Map<string, MatchNode[]>();
@@ -12,7 +13,7 @@ class ExpansionCache {
 
 	private getKey(pattern: Pattern): string {
 		try {
-			return game.GetService("HttpService").JSONEncode(pattern);
+			return NodeSerializer.PatternToString(pattern);
 		} catch(err) {
 			throw new Error(ErrorType.CacheError, {err});
 		}

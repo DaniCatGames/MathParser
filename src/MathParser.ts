@@ -1,5 +1,5 @@
 import { PatternMatcher } from "./Matching/PatternMatcher";
-import { Parser, ParserConfig } from "./Parse/Parser";
+import { Parser } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
 import { Evaluator } from "./AST/Evaluator";
@@ -25,8 +25,8 @@ export class MathParser {
 	variables: { [variable: string]: number } = {};
 	constants: { [variable: string]: number } = {};
 
-	constructor(parserConfig?: Partial<ParserConfig>) {
-		this.parser = new Parser(parserConfig);
+	constructor() {
+		this.parser = new Parser();
 		this.patternMatcher = new PatternMatcher();
 		this.simplifier = new Simplifier();
 		this.evaluator = new Evaluator();

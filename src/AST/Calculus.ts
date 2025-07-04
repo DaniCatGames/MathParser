@@ -1,241 +1,162 @@
 import {
 	Absolute,
 	Add,
+	Constant,
+	Equals,
 	Exponentiation,
 	Factorial,
 	Function,
 	List,
+	Literal,
 	Multiply,
 	Node,
-	NodeType,
 	Tensor,
-	Variable,
+	Variable
 } from "../Typescript/Node";
 import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
-import { Nodes, NodeTests } from "../Node/NodeUtils";
+import { Nodes } from "../Node/NodeUtils";
 import { Evaluator } from "./Evaluator";
-import { Polynomial, PolynomialTerm } from "../Typescript/Polynomials";
-import { PolynomialAnalyzer } from "./Polynomials/PolynomialAnalyzer";
+import { BaseASTVisitor } from "../Node/Visitors";
 
+export function NumericDerivative(node: Node, variable: string, at: number) {
+	const evaluator = new Evaluator();
+	MathFunctions.forEach(fn => evaluator.addFunction(fn));
 
-export class Calculus {
-	static derivative(node: Node, variable: string = "x"): Node {
-		switch(node.type) {
-			case NodeType.Literal:
-			case NodeType.Constant:
-				return this.literalOrConstant();
-			case NodeType.Variable:
-				return this.variable(node, variable);
-			case NodeType.Add:
-				return this.add(node, variable);
-			case NodeType.Multiply:
-				return this.multiply(node, variable);
-			case NodeType.Exponentiation:
-				return this.exponentiation(node, variable);
-			case NodeType.Absolute:
-				return this.absolute(node, variable);
-			case NodeType.Function:
-				return this.func(node, variable);
-			case NodeType.Factorial:
-				return this.factorial(node, variable);
-			case NodeType.List:
-				return this.list(node, variable);
-			case NodeType.Tensor:
-				return this.tensor(node, variable);
-			case NodeType.Equals:
-				throw new Error(ErrorType.Derivative, {
-					message: "Cannot take derivative of equality operator",
-					node: node,
-				});
+	const h = 1e-7;
+
+	evaluator.addVariable(variable, at + h);
+	const a = evaluator.Numeric(node);
+
+	evaluator.addVariable(variable, at + h);
+	const b = evaluator.Numeric(node);
+
+	return (a - b) / h;
+}
+
+export class Derivative extends BaseASTVisitor {
+	private variable: string = "x";
+
+	constructor(variable?: string) {
+		super();
+		if(variable) {
+			this.variable = variable;
 		}
 	}
 
-	static numericDerivative(node: Node, variable: string, at: number) {
-		const evaluator = new Evaluator();
-		MathFunctions.forEach(fn => evaluator.addFunction(fn));
-
-		const h = 1e-7;
-
-		evaluator.addVariable(variable, at + h);
-		const a = evaluator.Numeric(node);
-
-		evaluator.addVariable(variable, at + h);
-		const b = evaluator.Numeric(node);
-
-		return (a - b) / h;
+	SetVariable(variable: string) {
+		this.variable = variable;
+		return this;
 	}
 
-	static integral(polynomial: Polynomial, variable: string) {
-		const newIntegralTerms: PolynomialTerm[] = [];
-
-		polynomial.terms.forEach(term => {
-			const power = term.variables.get(variable) || 0;
-			const newPower = power + 1;
-
-			const newVariables = new Map<string, number>();
-			for(const [k, v] of term.variables) {
-				newVariables.set(k, v);
-			}
-			newVariables.set(variable, newPower);
-
-			const newCoeff = BasicNodes.Divide(
-				term.coefficient,
-				BasicNodes.Literal(newPower),
-			);
-
-			newIntegralTerms.push({
-				coefficient: newCoeff,
-				variables: newVariables,
-				degree: term.degree + 1,
-			});
-		});
-
-		return PolynomialAnalyzer.createPolynomial(newIntegralTerms);
-	}
-
-	static numericIntegral(node: Node) {
-
-	}
-
-
-	private static literalOrConstant() {
+	VisitLiteral(node: Literal): Node {
 		return Nodes.Zero();
 	}
 
-	private static variable(node: Variable, variable: string) {
-		if(node.string === variable) {
+	VisitConstant(node: Constant): Node {
+		return Nodes.Zero();
+	}
+
+	VisitVariable(node: Variable): Node {
+		if(node.string === this.variable) {
 			return Nodes.One();
 		} else {
-			return Nodes.Zero();
+			return this.Visit(node);
 		}
 	}
 
-	private static add(node: Add, variable: string) {
-		const args = node.args.map(arg => this.derivative(arg, variable));
-		const nonZeroArgs = args.filter(arg => !NodeTests.Zero(arg));
-
-		if(nonZeroArgs.size() === 0) {
-			return Nodes.Zero();
-		} else if(nonZeroArgs.size() === 1) {
-			return nonZeroArgs[0];
-		} else {
-			return Nodes.Add(...nonZeroArgs);
-		}
+	VisitAdd(node: Add): Node {
+		const args = node.args.map(arg => this.Visit(arg));
+		return Nodes.Add(...args);
 	}
 
-	private static multiply(node: Multiply, variable: string) {
+	VisitMultiply(node: Multiply): Node {
 		if(node.args.size() === 0) {
 			return Nodes.Zero();
 		} else if(node.args.size() === 1) {
-			return this.derivative(node.args[0], variable);
+			return this.Visit(node.args[0]);
 		}
 
-		const returnArgs: Node[] = [];
+		const args: Node[] = [];
 
 		for(let i = 0; i < node.args.size(); i++) {
+			const mulArgs: Node[] = [];
 			for(let j = 0; j < node.args.size(); j++) {
 				if(i === j) {
-					returnArgs.push(this.derivative(node.args[i], variable));
+					mulArgs.push(this.Visit(node.args[i]));
 				} else {
-					returnArgs.push(node.args[j]);
+					mulArgs.push(node.args[j]);
 				}
 			}
+			args.push(Nodes.Multiply(...mulArgs));
 		}
 
-		if(returnArgs.size() === 0) {
-			return Nodes.Zero();
-		} else if(returnArgs.size() === 1) {
-			return returnArgs[0];
-		} else {
-			return Nodes.Add(...returnArgs);
-		}
+		return Nodes.Add(...args);
 	}
 
-	private static exponentiation(node: Exponentiation, variable: string) {
+	VisitExponentiation(node: Exponentiation): Node {
 		const [base, exp] = node.args;
 
-		const baseDerivative = this.derivative(base, variable);
-		const expDerivative = this.derivative(exp, variable);
-
-		if(NodeTests.Zero(baseDerivative) && NodeTests.Zero(expDerivative)) {
-			return Nodes.Zero();
-		}
-
-		if(NodeTests.Zero(expDerivative)) {
-			return Nodes.Multiply(
-				exp,
-				baseDerivative,
-				Nodes.Exponentiation(base, Nodes.Add(exp, Nodes.NegativeOne())),
-			);
-		}
+		const baseDerivative = this.Visit(base);
+		const expDerivative = this.Visit(exp);
 
 		return Nodes.Multiply(
 			Nodes.Exponentiation(base, exp),
 			Nodes.Add(
 				Nodes.Multiply(
 					baseDerivative,
-					Nodes.Divide(exp, base),
+					Nodes.Divide(exp, base)
 				),
 				Nodes.Multiply(
 					expDerivative,
-					BasicNodes.Function("ln", base),
-				),
-			),
+					BasicNodes.Function("ln", base)
+				)
+			)
 		);
 	}
 
-	private static absolute(node: Absolute, variable: string) {
-		const arg = node.args[0];
-		const argDerivative = this.derivative(arg, variable);
-
-		if(NodeTests.Zero(argDerivative)) {
-			return Nodes.Zero();
-		}
-
+	VisitAbsolute(node: Absolute): Node {
 		return Nodes.Multiply(
-			Nodes.Divide(arg, node),
-			argDerivative,
+			Nodes.Divide(node.args[0], node),
+			this.Visit(node.args[0])
 		);
-	};
+	}
 
-	private static func(node: Function, variable: string) {
-		if(node.args.size() === 0) {
-			return Nodes.Zero();
-		}
-
-		const argDerivative = this.derivative(node.args[0], variable);
+	VisitFunction(node: Function): Node {
+		const argDerivative = this.Visit(node.args[0]);
 
 		let mathFunction: ExtraFunctionTypeBecauseOfStupidImports | undefined;
 
-		mathFunction = MathFunctions.find(fn => fn.names.includes(node.string));
+		mathFunction = MathFunctions.find(fn => fn.names.includes(node.string)); //TODO add custom functions to this check
 
 		if(!mathFunction) {
 			throw new Error(ErrorType.Derivative, {
-				message: "Function not found or implemented",
-				function: node.string,
+				message: "Function not found",
+				function: node.string
 			});
 		}
 
 		return Nodes.Multiply(mathFunction.derivative(node.args), argDerivative);
 	}
 
-	private static factorial(node: Factorial, variable: string): Node {
+	VisitFactorial(node: Factorial): Node {
 		throw new Error(ErrorType.Derivative, {
-			message: "Factorial derivative not implemented",
+			message: "Factorial derivative not implemented"
 		});
 	}
 
-	private static list(node: List, variable: string): Node {
-		const derivativeArgs = node.args.map(arg => this.derivative(arg, variable));
-
-		return BasicNodes.List(...derivativeArgs);
+	VisitList(node: List): Node {
+		return BasicNodes.List(...node.args.map(arg => this.Visit(arg)));
 	}
 
-	private static tensor(node: Tensor, variable: string): Node {
-		const args = node.args.map(element => this.derivative(element, variable));
+	VisitTensor(node: Tensor): Node {
+		return BasicNodes.Tensor(node.args.map(arg => this.Visit(arg)), node.shape);
+	}
 
-		return BasicNodes.Tensor(args, node.shape);
+	VisitEquals(node: Equals): Node {
+		throw new Error(ErrorType.Derivative, {
+			message: "Equals derivative not implemented"
+		});
 	}
 }

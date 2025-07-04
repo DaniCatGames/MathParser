@@ -1,8 +1,8 @@
 import { Node, Phase } from "../../Typescript/Node";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { arrayFromMap } from "../../Polyfill/Array";
-import { ComplexVisitor, FunctionVisitor } from "./Visitors";
-import { PostProcessorFunctions } from "../../Math/Symbolic/MathFunctions";
+import { ComplexVisitor, FunctionVisitor, Validator } from "./Visitors";
+import { MathFunctions, PostProcessorFunctions } from "../../Math/Symbolic/MathFunctions";
 import { FlatteningVisitor } from "../../Node/Visitors";
 
 export class PostProcessingPipeline {
@@ -15,19 +15,25 @@ export class PostProcessingPipeline {
 	private setupDefaultPhases() {
 		this.addPhase({
 			name: "ComplexVariableConverter",
-			visitor: new ComplexVisitor(),
+			visitor: new ComplexVisitor()
 		});
 
 		this.addPhase({
 			name: "FunctionConverter",
 			visitor: new FunctionVisitor(PostProcessorFunctions),
-			runAfter: ["ComplexVariableConverter"],
+			runAfter: ["ComplexVariableConverter"]
 		});
 
 		this.addPhase({
 			name: "Flattening",
 			visitor: new FlatteningVisitor(),
-			runAfter: ["FunctionConverter"],
+			runAfter: ["FunctionConverter"]
+		});
+
+		this.addPhase({
+			name: "Validation",
+			visitor: new Validator(MathFunctions, {}),
+			runAfter: ["FunctionConverter"]
 		});
 	}
 
@@ -44,7 +50,7 @@ export class PostProcessingPipeline {
 		if(phase) {
 			this.phases.set(phase.name, {
 				...phase,
-				enabled: true,
+				enabled: true
 			});
 		}
 	}
@@ -54,7 +60,7 @@ export class PostProcessingPipeline {
 		if(phase) {
 			this.phases.set(phase.name, {
 				...phase,
-				enabled: false,
+				enabled: false
 			});
 		}
 	}
@@ -73,7 +79,7 @@ export class PostProcessingPipeline {
 			} catch(error) {
 				throw new Error(ErrorType.Parser, {
 					message: `Error in phase '${phase.name}'`,
-					originalError: error,
+					originalError: error
 				});
 			}
 		}
@@ -135,7 +141,7 @@ export class PostProcessingPipeline {
 
 		if(result.size() !== phases.size()) {
 			throw new Error(ErrorType.Parser, {
-				message: "Circular dependency in phases",
+				message: "Circular dependency in phases"
 			});
 		}
 

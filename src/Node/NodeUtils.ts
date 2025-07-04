@@ -67,7 +67,7 @@ export class NodeUtils {
 
 		return {
 			type: node.type,
-			args: newArgs,
+			args: newArgs
 		} as T;
 	}
 
@@ -85,62 +85,48 @@ export class NodeUtils {
 
 		if(literals.size() > 0) {
 			args.push(
-				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
+				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals)
 			);
 		}
 
 		return args;
 	}
-
-	static ToString(node: Node): string {
-		let toReturn = "{";
-
-		toReturn += tostring(node.type);
-
-		if(NodeUtils.HasNumber(node)) {
-			toReturn += `:${node.number.real.numerator}|${node.number.real.denominator}|${node.number.imaginary.numerator}|${node.number.imaginary.denominator}`;
-		}
-
-		if(NodeUtils.HasString(node)) {
-			toReturn += `:${node.string}`;
-		}
-
-		if(NodeTests.Tensor(node)) {
-			toReturn += `:${node.shape.join("|")}`;
-		}
-
-		if(NodeUtils.HasArgs(node)) {
-			toReturn += `:${node.args.map(arg => this.ToString(arg)).join("|")}`;
-		}
-
-		toReturn += "}";
-		return toReturn;
-	}
 }
 
 export class Nodes {
 	static Multiply(...nodes: Node[]): Node {
+		let returnNode: Node;
 		const combined = NodeUtils.CombineLiterals(NodeType.Multiply, ...nodes);
 
-		if(combined.size() === 1) {
-			return combined[0];
+		if(combined.size() === 0) {
+			returnNode = this.Zero();
+		} else if(combined.size() === 1) {
+			returnNode = combined[0];
 		} else {
-			return NodeUtils.QuickFlat({
-				type: NodeType.Add,
-				args: combined,
+			returnNode = NodeUtils.QuickFlat({
+				type: NodeType.Multiply,
+				args: combined
 			});
 		}
+
+		if(NodeTests.Multiply(returnNode) && returnNode.args.every(arg => NodeTests.Zero(arg))) {
+			returnNode = this.Zero();
+		}
+
+		return returnNode;
 	}
 
 	static Add(...nodes: Node[]): Node {
 		const combined = NodeUtils.CombineLiterals(NodeType.Add, ...nodes);
 
-		if(combined.size() === 1) {
+		if(combined.size() === 0) {
+			return this.Zero();
+		} else if(combined.size() === 1) {
 			return combined[0];
 		} else {
 			return NodeUtils.QuickFlat({
 				type: NodeType.Add,
-				args: combined,
+				args: combined
 			});
 		}
 	}
@@ -174,7 +160,7 @@ export class Nodes {
 	static Negative(n: Node): Multiply {
 		return {
 			type: NodeType.Multiply,
-			args: [n, this.NegativeOne()],
+			args: [n, this.NegativeOne()]
 		};
 	}
 

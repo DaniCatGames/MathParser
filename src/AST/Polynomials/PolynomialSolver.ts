@@ -10,12 +10,12 @@ export class PolynomialSolver {
 		if(degree !== 0) {
 			return PolynomialAnalyzer.getCoefficient(
 				polynomial.polynomial,
-				new Map<string, number>().set(variable, degree),
+				new Map<string, number>().set(variable, degree)
 			);
 		} else {
 			return PolynomialAnalyzer.getCoefficient(
 				polynomial.polynomial,
-				new Map<string, number>(),
+				new Map<string, number>()
 			);
 		}
 	}
@@ -28,7 +28,7 @@ export class PolynomialSolver {
 		return {
 			a: this.getCoefficient(polynomial, variable, 2),
 			b: this.getCoefficient(polynomial, variable, 1),
-			c: this.getCoefficient(polynomial, variable, 0),
+			c: this.getCoefficient(polynomial, variable, 0)
 		};
 	}
 
@@ -37,7 +37,7 @@ export class PolynomialSolver {
 		if(!coefficients) {
 			throw new Error(ErrorType.Polynomial, {
 				message: "Polynomial is not a quadratic or univariate",
-				polynomial: polynomial,
+				polynomial: polynomial
 			});
 		}
 
@@ -46,18 +46,18 @@ export class PolynomialSolver {
 			Nodes.Multiply(
 				BasicNodes.Literal(4),
 				coefficients.a,
-				coefficients.c,
-			),
+				coefficients.c
+			)
 		));
 		const negativeB = Nodes.Negative(coefficients.b);
 		const low = Nodes.Multiply(BasicNodes.Literal(2), coefficients.a);
 
 		return [Nodes.Divide(
 			Nodes.Add(negativeB, D),
-			low,
+			low
 		), Nodes.Divide(
 			Nodes.Subtract(negativeB, D),
-			low,
+			low
 		)];
 	}
 
@@ -68,7 +68,7 @@ export class PolynomialSolver {
 		}
 		return {
 			a: this.getCoefficient(polynomial, variable, 1),
-			b: this.getCoefficient(polynomial, variable, 0),
+			b: this.getCoefficient(polynomial, variable, 0)
 		};
 	}
 
@@ -77,10 +77,10 @@ export class PolynomialSolver {
 		if(!coefficients) {
 			throw new Error(ErrorType.Polynomial, {
 				message: "Polynomial is not a linear or univariate",
-				polynomial: polynomial,
+				polynomial: polynomial
 			});
 		}
 
-		return BasicNodes.Divide(coefficients.b, coefficients.a);
+		return Nodes.Divide(coefficients.b, coefficients.a);
 	}
 }

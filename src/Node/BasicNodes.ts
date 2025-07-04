@@ -15,7 +15,6 @@ import {
 	Variable,
 } from "../Typescript/Node";
 import { Complex } from "../Typescript/Math";
-import { Nodes } from "./NodeUtils";
 import { ComplexUtils } from "../Math/Symbolic/Complex";
 
 export class BasicNodes {
@@ -54,24 +53,10 @@ export class BasicNodes {
 		};
 	}
 
-	static Divide(n1: Node, n2: Node): Multiply {
-		return {
-			type: NodeType.Multiply,
-			args: [n1, Nodes.Inverse(n2)],
-		};
-	}
-
 	static Add(...nodes: Node[]): Add {
 		return {
 			type: NodeType.Add,
 			args: nodes,
-		};
-	}
-
-	static Subtract(n1: Node, n2: Node): Add {
-		return {
-			type: NodeType.Add,
-			args: [n1, Nodes.Negative(n2)],
 		};
 	}
 

@@ -1,4 +1,4 @@
-import { Node, Tensor } from "../../Typescript/Node";
+import { Node, NodeType, Tensor } from "../../Typescript/Node";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { BasicNodes } from "../../Node/BasicNodes";
 import { Nodes } from "../../Node/NodeUtils";
@@ -16,7 +16,7 @@ export class TensorUtils {
 		if(indices.size() !== shape.size()) throw new Error(ErrorType.Tensor, {
 			message: "Index dimension mismatch",
 			indices: indices,
-			tensorShape: shape,
+			tensorShape: shape
 		});
 
 		let flatIndex = 0;
@@ -27,7 +27,7 @@ export class TensorUtils {
 				throw new Error(ErrorType.Tensor, {
 					message: `Index for dimension ${i} out of bounds`,
 					index: indices[i],
-					size: shape[i],
+					size: shape[i]
 				});
 			}
 
@@ -79,7 +79,7 @@ export class TensorUtils {
 			oldShape: tensor.shape,
 			oldSize: oldTotal,
 			newShape: shape,
-			newSize: newTotal,
+			newSize: newTotal
 		});
 
 		return BasicNodes.Tensor([...tensor.args], [...shape]);
@@ -103,7 +103,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Tensors must have compatible shapes for element-wise addition",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
@@ -120,13 +120,13 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Tensors must have compatible shapes for element-wise subtraction",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
 		const resultArgs: Node[] = [];
 		for(let i = 0; i < a.args.size(); i++) {
-			resultArgs.push(BasicNodes.Subtract(a.args[i], b.args[i]));
+			resultArgs.push(Nodes.Subtract(a.args[i], b.args[i]));
 		}
 
 		return BasicNodes.Tensor(resultArgs, [...a.shape]);
@@ -137,7 +137,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Tensors must have compatible shapes for element-wise multiplication",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
@@ -154,13 +154,13 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Tensors must have compatible shapes for element-wise division",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
 		const resultArgs: Node[] = [];
 		for(let i = 0; i < a.args.size(); i++) {
-			resultArgs.push(BasicNodes.Divide(a.args[i], b.args[i]));
+			resultArgs.push(Nodes.Divide(a.args[i], b.args[i]));
 		}
 
 		return BasicNodes.Tensor(resultArgs, [...a.shape]);
@@ -180,7 +180,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Matrix multiplication requires 2D tensors",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
@@ -191,7 +191,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Invalid dimensions for matrix multiplication, columns of matrix A must equal rows of matrix B",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
@@ -226,7 +226,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Vector dot product requires 1D tensors",
 				shapeA: a.shape,
-				shapeB: b.shape,
+				shapeB: b.shape
 			});
 		}
 
@@ -234,7 +234,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Vectors must have same length for dot product",
 				lengthA: a.shape[0],
-				lengthB: b.shape[0],
+				lengthB: b.shape[0]
 			});
 		}
 
@@ -266,7 +266,7 @@ export class TensorUtils {
 			throw new Error(ErrorType.Tensor, {
 				message: "Axes array must have same length as tensor rank",
 				axesLength: axes.size(),
-				tensorDimensions: tensor.shape.size(),
+				tensorDimensions: tensor.shape.size()
 			});
 		}
 
@@ -276,7 +276,7 @@ export class TensorUtils {
 				throw new Error(ErrorType.Tensor, {
 					message: "Axes must be a permutation of tensor dimensions",
 					axes: axes,
-					tensorDimensions: tensor.shape.size(),
+					tensorDimensions: tensor.shape.size()
 				});
 			}
 		}
@@ -286,7 +286,7 @@ export class TensorUtils {
 				throw new Error(ErrorType.Tensor, {
 					message: "Axis is out of bounds for tensor",
 					axis: axes[i],
-					tensorDimensions: tensor.shape.size(),
+					tensorDimensions: tensor.shape.size()
 				});
 			}
 		}
@@ -317,7 +317,7 @@ export class TensorUtils {
 				throw new Error(ErrorType.Tensor, {
 					message: "Failed to get element",
 					originalIndices: originalIndices,
-					tensorShape: tensor.shape,
+					tensorShape: tensor.shape
 				});
 			}
 
@@ -376,5 +376,24 @@ export class TensorUtils {
 
 	static isTensor(tensor: Tensor) {
 		return tensor.shape.size() >= 3;
+	}
+
+	static validateTensorShape(args: Node[], expectedShape: number[], currentDepth: number = 0): boolean {
+		if(args.size() !== expectedShape[currentDepth]) {
+			return false;
+		}
+
+		if(currentDepth === expectedShape.size() - 1) {
+			return args.every(arg => arg.type !== NodeType.Tensor);
+		}
+
+		return args.every(arg => {
+			if(arg.type !== NodeType.Tensor) return false;
+			return this.validateTensorShape(
+				arg.args,
+				expectedShape,
+				currentDepth + 1
+			);
+		});
 	}
 }
