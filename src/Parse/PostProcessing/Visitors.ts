@@ -11,20 +11,20 @@ import {
 	Variable,
 } from "../../Typescript/Node";
 import { Nodes, NodeTests } from "../../Node/NodeUtils";
-import { ExtraFunctionTypeBecauseOfStupidImports, FunctionWithoutDerivative } from "../../Math/Symbolic/MathFunctions";
+import { ExtraFunctionTypeBecauseOfStupidImports } from "../../Math/Symbolic/MathFunctions";
 import { BaseASTVisitor } from "../../Node/Visitors";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { TensorUtils } from "../../Math/Symbolic/Tensor";
+import { Registry } from "../../Registry";
 
 export class FunctionVisitor extends BaseASTVisitor {
-	constructor(private functionRegistry: { fn: FunctionWithoutDerivative, converter: (input: Node[]) => Node }[]) {
+	constructor(private registry: Registry) {
 		super();
 	}
 
 	VisitFunction(node: Function): Node {
-		for(const {fn, converter} of this.functionRegistry) {
-
-			if(fn.names.includes(node.string)) {
+		for(const {names, converter} of this.registry.postProcessorFunctions) {
+			if(names.includes(node.string)) {
 				const args = node.args.map(arg => this.Visit(arg));
 				return converter(args);
 			}

@@ -2,19 +2,15 @@ import { Error, ErrorType } from "../../Typescript/Error";
 import { Tokenizer } from "./Tokenizer";
 import { RLEagerTokenizer } from "./RLEagerTokenizer";
 import { Token, TokenType } from "../../Typescript/Parsing";
+import { Registry } from "../../Registry";
 
 export class TokenStream {
 	private tokens: Token[] = [];
 	private cursor: number = 0;
 	private tokenizer: Tokenizer;
 
-	identifiers = new Set<string>();
-	functions = new Set<string>();
-
-	constructor(input: string | Token[]) {
+	constructor(private registry: Registry) {
 		this.tokenizer = new Tokenizer("");
-
-		this.tokenize(input);
 	}
 
 	tokenize(input: string | Token[]) {
@@ -42,14 +38,6 @@ export class TokenStream {
 		this.cursor = 0;
 	}
 
-	addIdentifier(identifier: string) {
-		this.identifiers.add(identifier);
-	}
-
-	addFunction(fn: string) {
-		this.functions.add(fn);
-	}
-
 	private processInput(input: string | Token[]) {
 		if(typeIs(input, "string")) {
 			this.tokenizer.reset();
@@ -67,7 +55,7 @@ export class TokenStream {
 		const eagerTokenized: Token[] = [];
 		this.tokens.forEach(token => {
 			if(token.type === TokenType.Identifier) {
-				const replacement = RLEagerTokenizer(token, this.identifiers);
+				const replacement = RLEagerTokenizer(token, this.registry);
 				replacement.forEach(replacementToken => {
 					eagerTokenized.push(replacementToken);
 				});
@@ -89,7 +77,7 @@ export class TokenStream {
 
 			if(!nextToken) break;
 
-			if(shouldInsertMultiplication(current, nextToken, this.functions)) {
+			if(shouldInsertMultiplication(current, nextToken, this.registry)) {
 				result.push({
 					type: TokenType.Multiply,
 					value: "*",
@@ -102,7 +90,7 @@ export class TokenStream {
 	};
 }
 
-function shouldInsertMultiplication(current: Token, nextToken: Token, functions: Set<string>) {
+function shouldInsertMultiplication(current: Token, nextToken: Token, registry: Registry) {
 	const leftTokens = new Set<TokenType>([
 		TokenType.Literal,            // 2x      ->  2*x
 		TokenType.Identifier,         // x2      ->  x*2
@@ -126,7 +114,7 @@ function shouldInsertMultiplication(current: Token, nextToken: Token, functions:
 
 	shouldMultiply &&= leftTokens.has(current.type) && rightTokens.has(nextToken.type);
 	shouldMultiply &&= !(current.type === TokenType.Literal && nextToken.type === TokenType.Literal); // do not multiply literal literal
-	shouldMultiply &&= !functions.has(current.value);
+	shouldMultiply &&= !registry.functions.some(fn => fn.names.includes(current.value));
 
 	return shouldMultiply;
 }

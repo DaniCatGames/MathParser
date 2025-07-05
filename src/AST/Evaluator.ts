@@ -1,14 +1,10 @@
-import { Function } from "../Math/Symbolic/MathFunctions";
 import { Node, NodeType } from "../Typescript/Node";
 import { Error, ErrorType } from "../Typescript/Error";
 import { GammaFunction } from "../Math/FloatingPoint/Gamma";
+import { Registry } from "../Registry";
 
 export class Evaluator {
-	private readonly functions: Function[] = [];
-	private readonly variables: { [key: string]: number } = {};
-	private readonly constants: { [key: string]: number } = {};
-
-	constructor() {
+	constructor(private registry: Registry) {
 	}
 
 	Numeric(node: Node): number {
@@ -16,16 +12,25 @@ export class Evaluator {
 			case NodeType.Literal:
 				return node.number.real.numerator / node.number.real.denominator;
 			case NodeType.Variable:
-			case NodeType.Constant:
-				const value = this.constants[node.string];
-				if(!value) {
+				const variable = this.registry.variables[node.string];
+				if(!variable) {
 					throw new Error(ErrorType.Evaluator, {
-						message: "Unknown constant or variable",
+						message: "Unknown variable",
 						variable: node.string,
-						constants: this.constants,
+						constants: this.registry.variables,
 					});
 				}
-				return value;
+				return this.Numeric(variable);
+			case NodeType.Constant:
+				const value = this.registry.constants[node.string];
+				if(!value) {
+					throw new Error(ErrorType.Evaluator, {
+						message: "Unknown constant",
+						variable: node.string,
+						constants: this.registry.constants,
+					});
+				}
+				return this.Numeric(value);
 			case NodeType.Absolute:
 				return math.abs(this.Numeric(node.args[0]));
 			case NodeType.Add:
@@ -33,13 +38,13 @@ export class Evaluator {
 			case NodeType.Factorial:
 				return GammaFunction.gamma(this.Numeric(node.args[0]));
 			case NodeType.Function:
-				let func = this.functions.find(fn => fn.names.includes(node.string));
+				let func = this.registry.functions.find(fn => fn.names.includes(node.string));
 
 				if(!func) {
 					throw new Error(ErrorType.Evaluator, {
 						message: "Unknown function",
 						func: node.string,
-						functions: this.functions,
+						functions: this.registry.functions,
 					});
 				}
 				return func.function(node.args.map(node => this.Numeric(node)));
@@ -57,26 +62,5 @@ export class Evaluator {
 					message: "Lists/Tensors not supported",
 				});
 		}
-	}
-
-	addVariable(variable: string, value: number) {
-		this.variables[variable] = value;
-	}
-
-	addFunction(fn: Function) {
-		const i = this.functions.indexOf(fn);
-		i > -1 ? this.functions[i] = fn : this.functions.push(fn);
-	}
-
-	removeFunction(fn: string) {
-		const func = this.functions.find(value => value.names.includes(fn));
-		if(!func) return false;
-
-		this.functions.remove(this.functions.indexOf(func));
-		return true;
-	}
-
-	addConstant(constant: string, value: number) {
-		this.constants[constant] = value;
 	}
 }

@@ -1,3 +1,5 @@
+import { BasicNodes } from "../../Node/BasicNodes";
+
 export const ExtendedMath = {
 
 	// Trigonometric Functions
@@ -79,10 +81,10 @@ export const ExtendedMath = {
 	// Constants
 
 	constants: {
-		pi: math.pi,
-		tau: math.pi * 2,
-		e: math.exp(1),
-		phi: 1.618033988749894,
-		inf: math.huge,
+		pi: BasicNodes.Literal(math.pi),
+		tau: BasicNodes.Literal(math.pi * 2),
+		e: BasicNodes.Literal(math.exp(1)),
+		phi: BasicNodes.Literal(1.618033988749894),
+		inf: BasicNodes.Literal(math.huge),
 	},
 };

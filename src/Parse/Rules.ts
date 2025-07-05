@@ -22,7 +22,7 @@ export class LiteralRule implements GrammarRule {
 		if(!number) {
 			throw new Error(ErrorType.Parser, {
 				message: `Invalid literal: ${token.value}`,
-				token: token
+				token: token,
 			});
 		}
 
@@ -55,11 +55,11 @@ export class BinaryOperatorRule implements GrammarRule {
 	enabled = true;
 
 	private nodeCreators = new Map<TokenType, (left: Node, right: Node) => Node>([
-		[TokenType.Add, (l, r) => BasicNodes.Add(l, r)],
+		[TokenType.Add, (l, r) => Nodes.Add(l, r)],
 		[TokenType.Subtract, (l, r) => Nodes.Subtract(l, r)],
-		[TokenType.Multiply, (l, r) => BasicNodes.Multiply(l, r)],
+		[TokenType.Multiply, (l, r) => Nodes.Multiply(l, r)],
 		[TokenType.Divide, (l, r) => Nodes.Divide(l, r)],
-		[TokenType.Exponentiation, (l, r) => BasicNodes.Exponentiation(l, r)]
+		[TokenType.Exponentiation, (l, r) => Nodes.Exponentiation(l, r)],
 	]);
 
 	canStartWith(token: Token, parser: ParserContext): boolean {
@@ -82,7 +82,7 @@ export class BinaryOperatorRule implements GrammarRule {
 		const creator = this.nodeCreators.get(operator.type);
 		if(!creator) throw new Error(ErrorType.Parser, {
 			message: `No creator for operator: ${operator.value}`,
-			token: operator
+			token: operator,
 		});
 
 		return creator(left, right);
@@ -130,7 +130,7 @@ export class FunctionCallRule implements GrammarRule {
 		const func = parser.findFunction(name.value);
 		if(!func) throw new Error(ErrorType.Parser, {
 			message: `No function found with name: ${name.value}`,
-			token: name
+			token: name,
 		});
 
 		if(func.arguments !== args.size()) {
@@ -138,7 +138,7 @@ export class FunctionCallRule implements GrammarRule {
 				message: "Incorrect number of arguments for function",
 				functionName: name.value,
 				expected: func.arguments,
-				got: args.size()
+				got: args.size(),
 			});
 		}
 

@@ -14,8 +14,9 @@ import {
 	ParenthesesRule,
 	TensorRule,
 	UnaryOperatorRule,
-	VariableRule
+	VariableRule,
 } from "./Rules";
+import { Registry } from "../Registry";
 
 const operators = new Map<string, number>([
 	["!", 6],
@@ -24,7 +25,7 @@ const operators = new Map<string, number>([
 	["*", 3],
 	["/", 3],
 	["+", 2],
-	["-", 2]
+	["-", 2],
 ]);
 
 export class Parser implements ParserContext {
@@ -36,14 +37,10 @@ export class Parser implements ParserContext {
 	private lookahead: Token = {type: TokenType.Add, value: "", index: 0};
 	private endOfInput = false;
 
-	private functions = new Set<Function>();
-	private variables = new Set<string>();
-	private constants = new Set<string>();
-
 	private maxListSize = 200;
 
-	constructor() {
-		this.tokenStream = new TokenStream("");
+	constructor(private registry: Registry) {
+		this.tokenStream = new TokenStream(this.registry);
 		this.setupDefault();
 	}
 
@@ -71,7 +68,7 @@ export class Parser implements ParserContext {
 	addRule(rule: GrammarRule) {
 		if(this.rules.has(rule.name)) {
 			throw new Error(ErrorType.Parser, {
-				message: `Rule '${rule.name}' already exists`
+				message: `Rule '${rule.name}' already exists`,
 			});
 		}
 
@@ -91,27 +88,9 @@ export class Parser implements ParserContext {
 		return rule ? rule.enabled : false;
 	}
 
-	addVariable(variable: string) {
-		this.variables.add(variable);
-		this.tokenStream.addIdentifier(variable);
-	}
-
-	addConstant(constant: string) {
-		this.constants.add(constant);
-		this.tokenStream.addIdentifier(constant);
-	}
-
-	addFunction(fn: Function) {
-		this.functions.add(fn);
-		fn.names.forEach((name) => {
-			this.tokenStream.addIdentifier(name);
-			this.tokenStream.addFunction(name);
-		});
-	}
-
 	eat(tokenType?: TokenType, errorMessage?: string) {
 		if(this.endOfInput) throw new Error(ErrorType.Parser, {
-			message: errorMessage || "Unexpected end of input"
+			message: errorMessage || "Unexpected end of input",
 		});
 
 		const token = this.lookahead;
@@ -119,7 +98,7 @@ export class Parser implements ParserContext {
 		if(tokenType && token.type !== tokenType) throw new Error(ErrorType.Parser, {
 			message: errorMessage || "Unexpected token",
 			expected: tokenType,
-			got: token.type
+			got: token.type,
 		});
 
 		try {
@@ -156,7 +135,7 @@ export class Parser implements ParserContext {
 
 		throw new Error(ErrorType.Parser, {
 			message: `No prefix rule found for token: ${this.lookahead.value}`,
-			token: this.lookahead
+			token: this.lookahead,
 		});
 	}
 
@@ -172,7 +151,7 @@ export class Parser implements ParserContext {
 
 		throw new Error(ErrorType.Parser, {
 			message: `No mixfix rule found for token: ${this.lookahead.value}`,
-			token: this.lookahead
+			token: this.lookahead,
 		});
 	}
 
@@ -185,7 +164,7 @@ export class Parser implements ParserContext {
 		while(this.lookahead.type !== endType) {
 			loopCounter++;
 			if(loopCounter > this.maxListSize) throw new Error(ErrorType.Parser, {
-				message: "Max list size exceeded"
+				message: "Max list size exceeded",
 			});
 
 			args.push(this.expression());
@@ -203,21 +182,17 @@ export class Parser implements ParserContext {
 	}
 
 	isFunction(name: string): boolean {
-		for(const func of this.functions) {
-			if(func.names.includes(name)) return true;
-		}
-		return false;
+		return this.registry.functions.some(fn => fn.names.includes(name));
 	}
 
 	findFunction(name: string): Function | undefined {
-		for(const func of this.functions) {
-			if(func.names.includes(name)) return func;
-		}
-		return undefined;
+		return this.registry.functions.find(fn => fn.names.includes(name));
 	}
 
 	isConstant(name: string): boolean {
-		return this.constants.has(name);
+		let isConstant = false;
+		for(const [cName, _] of pairs(this.registry.constants)) isConstant ||= cName === name;
+		return isConstant;
 	}
 
 	getPrecedence(token: Token | "unary"): number {

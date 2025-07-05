@@ -67,7 +67,7 @@ export class NodeUtils {
 
 		return {
 			type: node.type,
-			args: newArgs
+			args: newArgs,
 		} as T;
 	}
 
@@ -85,7 +85,7 @@ export class NodeUtils {
 
 		if(literals.size() > 0) {
 			args.push(
-				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals)
+				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
 			);
 		}
 
@@ -105,7 +105,7 @@ export class Nodes {
 		} else {
 			returnNode = NodeUtils.QuickFlat({
 				type: NodeType.Multiply,
-				args: combined
+				args: combined,
 			});
 		}
 
@@ -126,7 +126,7 @@ export class Nodes {
 		} else {
 			return NodeUtils.QuickFlat({
 				type: NodeType.Add,
-				args: combined
+				args: combined,
 			});
 		}
 	}
@@ -143,11 +143,11 @@ export class Nodes {
 		if(NodeTests.Exponentiation(node1)) {
 			node2 = this.Multiply(node1.args[1], node2);
 
-			if(NodeTests.Zero(node2)) return this.Zero();
+			if(NodeTests.Zero(node2)) return this.One();
 			else if(NodeTests.One(node2)) return node1.args[0];
 			else return BasicNodes.Exponentiation(node1.args[0], node2);
 		} else {
-			if(NodeTests.Zero(node2)) return this.Zero();
+			if(NodeTests.Zero(node2)) return this.One();
 			else if(NodeTests.One(node2)) return node1;
 			else return BasicNodes.Exponentiation(node1, node2);
 		}
@@ -160,7 +160,7 @@ export class Nodes {
 	static Negative(n: Node): Multiply {
 		return {
 			type: NodeType.Multiply,
-			args: [n, this.NegativeOne()]
+			args: [n, this.NegativeOne()],
 		};
 	}
 

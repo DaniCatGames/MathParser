@@ -199,40 +199,24 @@ export const MathFunctions: Function[] = [
 	},
 ];
 
-export const PostProcessorFunctions: { fn: FunctionWithoutDerivative, converter: (input: Node[]) => Node }[] = [
+export const PostProcessorFunctions: { names: string[], converter: (input: Node[]) => Node }[] = [
 	{
-		fn: {
-			names: ["deg", "degrees", "toDeg", "toDegrees"],
-			arguments: 1,
-			function: () => 0,
-		},
+		names: ["deg", "degrees", "toDeg", "toDegrees"],
 		converter: ([x]) => {
 			return Nodes.Multiply(x, Nodes.Divide(BasicNodes.Literal(180), BasicNodes.Variable("pi")));
 		},
 	}, {
-		fn: {
-			names: ["rad", "radians", "toRad", "toRadians"],
-			arguments: 1,
-			function: () => 0,
-		},
+		names: ["rad", "radians", "toRad", "toRadians"],
 		converter: ([x]) => {
 			return Nodes.Multiply(x, Nodes.Divide(BasicNodes.Variable("pi"), BasicNodes.Literal(180)));
 		},
 	}, {
-		fn: {
-			names: ["abs", "absolute"],
-			arguments: 1,
-			function: () => 0,
-		},
+		names: ["abs", "absolute"],
 		converter: ([x]) => {
 			return BasicNodes.Absolute(x);
 		},
 	}, {
-		fn: {
-			names: ["vec", "vector"],
-			arguments: 1,
-			function: () => 0,
-		},
+		names: ["vec", "vector"],
 		converter: (args) => {
 			return BasicNodes.Vector(...args);
 		},

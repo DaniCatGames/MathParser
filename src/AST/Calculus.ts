@@ -11,7 +11,7 @@ import {
 	Multiply,
 	Node,
 	Tensor,
-	Variable
+	Variable,
 } from "../Typescript/Node";
 import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
@@ -19,20 +19,31 @@ import { BasicNodes } from "../Node/BasicNodes";
 import { Nodes } from "../Node/NodeUtils";
 import { Evaluator } from "./Evaluator";
 import { BaseASTVisitor } from "../Node/Visitors";
+import { Registry } from "../Registry";
 
-export function NumericDerivative(node: Node, variable: string, at: number) {
-	const evaluator = new Evaluator();
-	MathFunctions.forEach(fn => evaluator.addFunction(fn));
+export function NumericDerivative(node: Node, variable: string, at: number, registry: Registry) {
+	let currentValue: Node | undefined;
+	if(registry.variables[variable]) {
+		currentValue = registry.variables[variable];
+	}
+
+	const evaluator = new Evaluator(registry);
 
 	const h = 1e-7;
 
-	evaluator.addVariable(variable, at + h);
-	const a = evaluator.Numeric(node);
+	registry.addVariables([variable, BasicNodes.Literal(at - h)]);
+	const left = evaluator.Numeric(node);
 
-	evaluator.addVariable(variable, at + h);
-	const b = evaluator.Numeric(node);
+	registry.addVariables([variable, BasicNodes.Literal(at + h)]);
+	const right = evaluator.Numeric(node);
 
-	return (a - b) / h;
+	if(currentValue) {
+		registry.variables[variable] = currentValue;
+	} else {
+		delete registry.variables[variable];
+	}
+
+	return (right - left) / (2 * h);
 }
 
 export class Derivative extends BaseASTVisitor {
@@ -106,20 +117,20 @@ export class Derivative extends BaseASTVisitor {
 			Nodes.Add(
 				Nodes.Multiply(
 					baseDerivative,
-					Nodes.Divide(exp, base)
+					Nodes.Divide(exp, base),
 				),
 				Nodes.Multiply(
 					expDerivative,
-					BasicNodes.Function("ln", base)
-				)
-			)
+					BasicNodes.Function("ln", base),
+				),
+			),
 		);
 	}
 
 	VisitAbsolute(node: Absolute): Node {
 		return Nodes.Multiply(
 			Nodes.Divide(node.args[0], node),
-			this.Visit(node.args[0])
+			this.Visit(node.args[0]),
 		);
 	}
 
@@ -133,7 +144,7 @@ export class Derivative extends BaseASTVisitor {
 		if(!mathFunction) {
 			throw new Error(ErrorType.Derivative, {
 				message: "Function not found",
-				function: node.string
+				function: node.string,
 			});
 		}
 
@@ -142,7 +153,7 @@ export class Derivative extends BaseASTVisitor {
 
 	VisitFactorial(node: Factorial): Node {
 		throw new Error(ErrorType.Derivative, {
-			message: "Factorial derivative not implemented"
+			message: "Factorial derivative not implemented",
 		});
 	}
 
@@ -156,7 +167,7 @@ export class Derivative extends BaseASTVisitor {
 
 	VisitEquals(node: Equals): Node {
 		throw new Error(ErrorType.Derivative, {
-			message: "Equals derivative not implemented"
+			message: "Equals derivative not implemented",
 		});
 	}
 }
