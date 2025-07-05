@@ -38,7 +38,7 @@ export class MathParser {
 
 	evaluate(node: Node): number | Error {
 		try {
-			return this.evaluator.Numeric(node);
+			return this.evaluator.Visit(node);
 		} catch(error) {
 			return error as Error;
 		}
