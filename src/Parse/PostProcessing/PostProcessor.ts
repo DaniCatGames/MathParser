@@ -2,7 +2,6 @@ import { Node, Phase } from "../../Typescript/Node";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { arrayFromMap } from "../../Polyfill/Array";
 import { ComplexVisitor, FunctionVisitor, Validator } from "./Visitors";
-import { MathFunctions } from "../../Math/Symbolic/MathFunctions";
 import { FlatteningVisitor } from "../../Node/Visitors";
 import { Registry } from "../../Registry";
 
@@ -33,7 +32,7 @@ export class PostProcessingPipeline {
 
 		this.addPhase({
 			name: "Validation",
-			visitor: new Validator(MathFunctions, {}),
+			visitor: new Validator(this.registry),
 			runAfter: ["FunctionConverter"],
 		});
 	}

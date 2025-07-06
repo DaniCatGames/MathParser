@@ -11,7 +11,6 @@ import {
 	Variable,
 } from "../../Typescript/Node";
 import { Nodes, NodeTests } from "../../Node/NodeUtils";
-import { ExtraFunctionTypeBecauseOfStupidImports } from "../../Math/Symbolic/MathFunctions";
 import { BaseASTVisitor } from "../../Node/Visitors";
 import { Error, ErrorType } from "../../Typescript/Error";
 import { TensorUtils } from "../../Math/Symbolic/Tensor";
@@ -47,14 +46,12 @@ export class ComplexVisitor extends BaseASTVisitor {
 }
 
 export class Validator extends BaseASTVisitor {
-	constructor(
-		private functions: ExtraFunctionTypeBecauseOfStupidImports[],
-		private constants: { [variable: string]: number }) {
+	constructor(private registry: Registry) {
 		super();
 	}
 
 	VisitFunction(node: Function): Node {
-		const fn = this.functions.find((func) => func.names.some((name) => name === node.string));
+		const fn = this.registry.functions.find((func) => func.names.some((name) => name === node.string));
 
 		if(!fn)
 			throw new Error(ErrorType.Parser, {
@@ -170,7 +167,7 @@ export class Validator extends BaseASTVisitor {
 		}
 
 		let has = false;
-		for(const [name, _] of pairs(this.constants)) {
+		for(const [name, _] of pairs(this.registry.constants)) {
 			if(name === node.string) has = true;
 		}
 		if(!has) throw new Error(ErrorType.Parser, {
