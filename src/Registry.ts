@@ -5,8 +5,8 @@ import { Nodes } from "./Node/NodeUtils";
 export class Registry {
 	functions: Function[] = [];
 	postProcessorFunctions: { names: string[], converter: (input: Node[]) => Node }[] = [];
-	variables: { [key: string]: Node } = {a: Nodes.Zero()};
-	constants: { [key: string]: Node } = {a: Nodes.One()};
+	variables: { [key: string]: Node } = {};
+	constants: { [key: string]: Node } = {};
 
 
 	addVariables(...variables: ([string, Node] | string)[]) {

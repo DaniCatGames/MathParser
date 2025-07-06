@@ -50,7 +50,7 @@ export interface MatchNode {
 	readonly specialNode?: string;
 }
 
-export type SpecialNodes = { [key: string]: Node }
+export type SpecialNodes = Record<string, Node>
 
 export enum SpecialNode {
 	P = "P",
