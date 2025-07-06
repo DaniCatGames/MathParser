@@ -20,7 +20,7 @@ export class PatternMatcher {
 	}
 
 	ApplyRuleWithPartialMatch(node: Node, rule: SimplificationRule): Node | undefined {
-		const expandedPatterns = this.expander.expand(rule.pattern);
+		const expandedPatterns = this.expander.Expand(rule.pattern);
 
 		for(const pattern of expandedPatterns) {
 			let result = this.MatchPattern(node, pattern);
@@ -50,7 +50,7 @@ export class PatternMatcher {
 	}
 
 	Match(node: Node, pattern: Pattern): MatchResult {
-		const expandedPatterns = this.expander.expand(pattern);
+		const expandedPatterns = this.expander.Expand(pattern);
 
 		for(const pattern of expandedPatterns) {
 			let result = this.MatchPattern(node, pattern);
@@ -229,10 +229,6 @@ export class PatternMatcher {
 	}
 
 	private GetIndicesArray(size: number) {
-		const array: number[] = [];
-		for(let i = 0; i < size; i++) {
-			array.push(i);
-		}
-		return array;
+		return new Array(size, 0).map((_, i) => i);
 	}
 }
