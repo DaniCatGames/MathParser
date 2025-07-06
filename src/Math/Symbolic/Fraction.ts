@@ -1,7 +1,7 @@
 import { Fraction } from "../../Typescript/Math";
 
 export class FractionUtils {
-	static gcd(a: number, b: number): number {
+	static Gcd(a: number, b: number): number {
 		a = math.abs(a);
 		b = math.abs(b);
 		while(b !== 0) {
@@ -12,8 +12,8 @@ export class FractionUtils {
 		return a;
 	}
 
-	static simplify(fraction: Fraction): Fraction {
-		const divisor = this.gcd(fraction.numerator, fraction.denominator);
+	static Simplify(fraction: Fraction): Fraction {
+		const divisor = this.Gcd(fraction.numerator, fraction.denominator);
 		const sign = fraction.denominator < 0 ? -1 : 1;
 		return {
 			numerator: (fraction.numerator * sign) / divisor,
@@ -22,28 +22,28 @@ export class FractionUtils {
 	}
 
 	static Add(a: Fraction, b: Fraction): Fraction {
-		return this.simplify({
+		return this.Simplify({
 			numerator: a.numerator * b.denominator + b.numerator * a.denominator,
 			denominator: a.denominator * b.denominator,
 		});
 	}
 
 	static Subtract(a: Fraction, b: Fraction): Fraction {
-		return this.simplify({
+		return this.Simplify({
 			numerator: a.numerator * b.denominator - b.numerator * a.denominator,
 			denominator: a.denominator * b.denominator,
 		});
 	}
 
 	static Multiply(a: Fraction, b: Fraction): Fraction {
-		return this.simplify({
+		return this.Simplify({
 			numerator: a.numerator * b.numerator,
 			denominator: a.denominator * b.denominator,
 		});
 	}
 
 	static Divide(a: Fraction, b: Fraction): Fraction {
-		return this.simplify({
+		return this.Simplify({
 			numerator: a.numerator * b.denominator,
 			denominator: a.denominator * b.numerator,
 		});
@@ -63,22 +63,22 @@ export class FractionUtils {
 		};
 	}
 
-	static equal(a: Fraction, b: Fraction): boolean {
+	static Equal(a: Fraction, b: Fraction): boolean {
 		return (a.numerator === b.numerator && a.denominator === b.denominator);
 	}
 
-	static fractionFromNumber(value: number): Fraction {
-		return this.simplify({
+	static FractionFromNumber(value: number): Fraction {
+		return this.Simplify({
 			numerator: value,
 			denominator: 1,
 		});
 	}
 
-	static isZero(fraction: Fraction) {
+	static IsZero(fraction: Fraction) {
 		return fraction.numerator === 0;
 	}
 
-	static isInteger(fraction: Fraction) {
+	static IsInteger(fraction: Fraction) {
 		return fraction.numerator % 1 === 0 && fraction.denominator === 1;
 	}
 }

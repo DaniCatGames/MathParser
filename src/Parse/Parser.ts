@@ -55,31 +55,31 @@ export class Parser implements ParserContext {
 
 	constructor(private registry: Registry) {
 		this.tokenStream = new TokenStream(this.registry);
-		this.setupDefault();
+		this.SetupDefault();
 	}
 
-	parse(input: string) {
+	Parse(input: string) {
 		this.tokenStream.reset();
 		this.tokenStream.tokenize(input);
 		this.lookahead = this.tokenStream.nextToken();
 		this.endOfInput = false;
-		return this.expression();
+		return this.Expression();
 	}
 
-	private setupDefault() {
-		this.addRule(new LiteralRule());
-		this.addRule(new ParenthesesRule());
-		this.addRule(new BinaryOperatorRule(operators));
-		this.addRule(new UnaryOperatorRule());
-		this.addRule(new FunctionCallRule());
-		this.addRule(new VariableRule());
-		this.addRule(new TensorRule());
-		this.addRule(new ListRule());
-		this.addRule(new AbsoluteValueRule());
-		this.addRule(new FactorialRule());
+	private SetupDefault() {
+		this.AddRule(new LiteralRule());
+		this.AddRule(new ParenthesesRule());
+		this.AddRule(new BinaryOperatorRule(operators));
+		this.AddRule(new UnaryOperatorRule());
+		this.AddRule(new FunctionCallRule());
+		this.AddRule(new VariableRule());
+		this.AddRule(new TensorRule());
+		this.AddRule(new ListRule());
+		this.AddRule(new AbsoluteValueRule());
+		this.AddRule(new FactorialRule());
 	}
 
-	addRule(rule: GrammarRule) {
+	AddRule(rule: GrammarRule) {
 		if(this.rules.has(rule.name)) {
 			throw new Error(ErrorType.Parser, {
 				message: `Rule '${rule.name}' already exists`,
@@ -97,12 +97,12 @@ export class Parser implements ParserContext {
 
 	//TODO remove/disable/enable rules
 
-	isEnabled(name: string) {
+	IsEnabled(name: string) {
 		const rule = this.rules.get(name);
 		return rule ? rule.enabled : false;
 	}
 
-	eat(tokenType?: TokenType, errorMessage?: string) {
+	Eat(tokenType?: TokenType, errorMessage?: string) {
 		if(this.endOfInput) throw new Error(ErrorType.Parser, {
 			message: errorMessage || "Unexpected end of input",
 		});
@@ -124,21 +124,21 @@ export class Parser implements ParserContext {
 		return token;
 	}
 
-	peek() {
+	Peek() {
 		return this.lookahead;
 	}
 
-	expression(precedence: number = 0): Node {
-		let left = this.prefix();
+	Expression(precedence: number = 0): Node {
+		let left = this.Prefix();
 
-		while(precedence < this.getPrecedence(this.lookahead)) {
-			left = this.mixfix(left);
+		while(precedence < this.GetPrecedence(this.lookahead)) {
+			left = this.Mixfix(left);
 		}
 
 		return left;
 	}
 
-	private prefix() {
+	private Prefix() {
 		for(const rule of this.prefixRules) {
 			if(!rule.enabled) continue;
 
@@ -153,7 +153,7 @@ export class Parser implements ParserContext {
 		});
 	}
 
-	private mixfix(left: Node) {
+	private Mixfix(left: Node) {
 
 		for(const rule of this.mixfixRules) {
 			if(!rule.enabled) continue;
@@ -169,8 +169,8 @@ export class Parser implements ParserContext {
 		});
 	}
 
-	parseList(startType: TokenType, endType: TokenType, separator: TokenType): Node[] {
-		this.eat(startType);
+	ParseList(startType: TokenType, endType: TokenType, separator: TokenType): Node[] {
+		this.Eat(startType);
 
 		let loopCounter = 0;
 		const args: Node[] = [];
@@ -181,35 +181,35 @@ export class Parser implements ParserContext {
 				message: "Max list size exceeded",
 			});
 
-			args.push(this.expression());
+			args.push(this.Expression());
 
 			if(this.lookahead.type !== separator) break;
-			this.eat(TokenType.Comma);
+			this.Eat(TokenType.Comma);
 		}
 
-		this.eat(endType);
+		this.Eat(endType);
 		return args;
 	}
 
-	hasMoreTokens(): boolean {
+	HasMoreTokens(): boolean {
 		return !this.endOfInput;
 	}
 
-	isFunction(name: string): boolean {
+	IsFunction(name: string): boolean {
 		return this.registry.functions.some(fn => fn.names.includes(name));
 	}
 
-	findFunction(name: string): Function | undefined {
+	FindFunction(name: string): Function | undefined {
 		return this.registry.functions.find(fn => fn.names.includes(name));
 	}
 
-	isConstant(name: string): boolean {
+	IsConstant(name: string): boolean {
 		let isConstant = false;
 		for(const [cName, _] of pairs(this.registry.constants)) isConstant ||= cName === name;
 		return isConstant;
 	}
 
-	getPrecedence(token: Token | "unary"): number {
+	GetPrecedence(token: Token | "unary"): number {
 		if(token === "unary") return 4;
 		return operators.find(op => op.tokenType === token.type)?.precedence || 0;
 	}

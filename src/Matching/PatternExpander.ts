@@ -11,7 +11,7 @@ class ExpansionCache {
 		this.maxSize = maxSize;
 	}
 
-	private getKey(pattern: Pattern): string {
+	private GetKey(pattern: Pattern): string {
 		try {
 			return NodeSerializer.PatternToString(pattern);
 		} catch(err) {
@@ -19,8 +19,8 @@ class ExpansionCache {
 		}
 	}
 
-	get(pattern: Pattern): MatchNode[] | undefined {
-		const key = this.getKey(pattern);
+	Get(pattern: Pattern): MatchNode[] | undefined {
+		const key = this.GetKey(pattern);
 		const value = this.cache.get(key);
 
 		if(value !== undefined) {
@@ -31,8 +31,8 @@ class ExpansionCache {
 		return value;
 	}
 
-	set(pattern: Pattern, result: MatchNode[]): void {
-		const key = this.getKey(pattern);
+	Set(pattern: Pattern, result: MatchNode[]): void {
+		const key = this.GetKey(pattern);
 
 		if(this.cache.has(key)) {
 			this.cache.delete(key);
@@ -47,7 +47,7 @@ class ExpansionCache {
 		this.cache.set(key, result);
 	}
 
-	clear(): void {
+	Clear(): void {
 		this.cache.clear();
 	}
 
@@ -77,22 +77,22 @@ export class PatternExpander {
 		this.cache = new ExpansionCache(this.config.maxCacheSize);
 	}
 
-	expand(pattern: Pattern) {
+	Expand(pattern: Pattern) {
 		if(this.config.enableCache) {
-			const cached = this.cache.get(pattern);
+			const cached = this.cache.Get(pattern);
 			if(cached) return cached;
 		}
 
-		const result = this.expandPattern(pattern, 0);
+		const result = this.ExpandPattern(pattern, 0);
 
 		if(this.config.enableCache) {
-			this.cache.set(pattern, result);
+			this.cache.Set(pattern, result);
 		}
 
 		return result;
 	}
 
-	private expandPattern(pattern: Pattern, depth: number) {
+	private ExpandPattern(pattern: Pattern, depth: number) {
 		if(depth > this.config.maxDepth) {
 			throw new Error(ErrorType.MaxDepthExceeded, {depth});
 		}
@@ -100,7 +100,7 @@ export class PatternExpander {
 		const result: MatchNode[] = [];
 
 		for(const node of pattern) {
-			const expanded = this.expandNode(node, depth + 1);
+			const expanded = this.ExpandNode(node, depth + 1);
 			for(const exp of expanded) {
 				result.push(exp);
 			}
@@ -109,30 +109,30 @@ export class PatternExpander {
 		return result;
 	}
 
-	private expandNode(node: DetectionNode, depth: number): MatchNode[] {
+	private ExpandNode(node: DetectionNode, depth: number): MatchNode[] {
 		if(!node.args) return [{...node, args: undefined}];
 
 		switch(node.type) {
 			default:
-				return this.expandNormal(node, depth);
+				return this.ExpandNormal(node, depth);
 		}
 	}
 
-	private expandNormal(node: DetectionNode, depth: number) {
+	private ExpandNormal(node: DetectionNode, depth: number) {
 		if(!node.args) return [];
 
-		const expandedArgs = node.args.map(arg => this.expandPattern(arg, depth));
-		return this.generateCombinations(node, expandedArgs);
+		const expandedArgs = node.args.map(arg => this.ExpandPattern(arg, depth));
+		return this.GenerateCombinations(node, expandedArgs);
 	}
 
-	private generateCombinations(node: DetectionNode, expandedArgs: MatchNode[][]): MatchNode[] {
+	private GenerateCombinations(node: DetectionNode, expandedArgs: MatchNode[][]): MatchNode[] {
 		const result: MatchNode[] = [];
 
-		const combinations = this.cartesianProduct(expandedArgs);
+		const combinations = this.CartesianProduct(expandedArgs);
 
 		for(const combination of combinations) {
 			if(node.commutative) {
-				const permutations = this.generatePermutations(combination);
+				const permutations = this.GeneratePermutations(combination);
 				permutations.forEach((permutation) => {
 					result.push({
 						...node,
@@ -150,15 +150,15 @@ export class PatternExpander {
 		return result;
 	}
 
-	clearCache(): void {
-		this.cache.clear();
+	ClearCache(): void {
+		this.cache.Clear();
 	}
 
-	setConfig<K extends keyof ExpansionConfig>(config: K, value: ExpansionConfig[K]): void {
+	SetConfig<K extends keyof ExpansionConfig>(config: K, value: ExpansionConfig[K]): void {
 		this.config[config] = value;
 	}
 
-	private generatePermutations<T extends defined>(arr: T[]): T[][] {
+	private GeneratePermutations<T extends defined>(arr: T[]): T[][] {
 		if(arr.size() === 0) return [[]];
 		const result: T[][] = [];
 		const used = new Set<T>();
@@ -172,7 +172,7 @@ export class PatternExpander {
 
 			// Generate permutations of remaining elements
 			const remaining = [...slice(arr, 0, i), ...slice(arr, i + 1)];
-			const perms = this.generatePermutations(remaining);
+			const perms = this.GeneratePermutations(remaining);
 
 			// Prepend current element to each permutation
 			for(const perm of perms) {
@@ -183,12 +183,12 @@ export class PatternExpander {
 		return result;
 	}
 
-	private cartesianProduct<T extends defined>(arrays: T[][]): T[][] {
+	private CartesianProduct<T extends defined>(arrays: T[][]): T[][] {
 		if(arrays.size() === 0) return [[]];
 
 		const firstArray = arrays[0];
 		const restArrays = slice(arrays, 1);
-		const restProduct = this.cartesianProduct(restArrays);
+		const restProduct = this.CartesianProduct(restArrays);
 
 		return flatMap(firstArray, item => restProduct.map(combination => [item, ...combination]));
 	}

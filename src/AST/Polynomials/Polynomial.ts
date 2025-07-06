@@ -8,7 +8,7 @@ import { Nodes, NodeTests } from "../../Node/NodeUtils";
 export class PolynomialUtils {
 	static Add(poly1: Polynomial, poly2: Polynomial) {
 		const combined = [...poly1.terms, ...poly2.terms];
-		return PolynomialAnalyzer.createPolynomial(
+		return PolynomialAnalyzer.CreatePolynomial(
 			this.CombineTerms(combined),
 		);
 	}
@@ -20,7 +20,7 @@ export class PolynomialUtils {
 		}));
 
 		const combined = [...poly1.terms, ...negated];
-		return PolynomialAnalyzer.createPolynomial(
+		return PolynomialAnalyzer.CreatePolynomial(
 			this.CombineTerms(combined),
 		);
 	}
@@ -35,7 +35,7 @@ export class PolynomialUtils {
 			}
 		}
 
-		return PolynomialAnalyzer.createPolynomial(
+		return PolynomialAnalyzer.CreatePolynomial(
 			this.CombineTerms(result),
 		);
 	}
@@ -46,7 +46,7 @@ export class PolynomialUtils {
 			coefficient: Nodes.Multiply(term.coefficient, scalar),
 		}));
 
-		return PolynomialAnalyzer.createPolynomial(scaledTerms);
+		return PolynomialAnalyzer.CreatePolynomial(scaledTerms);
 	}
 
 	static Divide(poly1: Polynomial, poly2: Polynomial) {
@@ -68,13 +68,13 @@ export class PolynomialUtils {
 			const quoTerm = this.DivideTerms(leadingTermRem, leadingTermDiv);
 			quoTerms.push(quoTerm);
 
-			const polyFromQuoTerm = PolynomialAnalyzer.createPolynomial([quoTerm]);
+			const polyFromQuoTerm = PolynomialAnalyzer.CreatePolynomial([quoTerm]);
 			const toSubtract = this.Multiply(poly2, polyFromQuoTerm);
 			rem = this.Subtract(rem, toSubtract);
 		}
 
 		const quo = quoTerms.size() > 0
-			? PolynomialAnalyzer.createPolynomial(quoTerms)
+			? PolynomialAnalyzer.CreatePolynomial(quoTerms)
 			: this.Zero();
 
 		return {
@@ -117,7 +117,7 @@ export class PolynomialUtils {
 			b = remainder;
 		}
 
-		return this.toMonic(a);
+		return this.ToMonic(a);
 	}
 
 	static Derivative(poly: Polynomial, variable: string = "x") {
@@ -128,7 +128,7 @@ export class PolynomialUtils {
 			if(derivative) terms.push(derivative);
 		});
 
-		return PolynomialAnalyzer.createPolynomial(terms);
+		return PolynomialAnalyzer.CreatePolynomial(terms);
 	}
 
 	private static TermDerivative(term: PolynomialTerm, variable: string): PolynomialTerm | undefined {
@@ -184,7 +184,7 @@ export class PolynomialUtils {
 	}
 
 	static Constant(node: Node) {
-		return PolynomialAnalyzer.createPolynomial([{
+		return PolynomialAnalyzer.CreatePolynomial([{
 			coefficient: node,
 			variables: new Map<string, number>(),
 			degree: 0,
@@ -199,7 +199,7 @@ export class PolynomialUtils {
 		const map = new Map<string, PolynomialTerm>();
 
 		terms.forEach((term) => {
-			const signature = PolynomialAnalyzer.powerSignature(term.variables);
+			const signature = PolynomialAnalyzer.PowerSignature(term.variables);
 
 			if(map.has(signature)) {
 				const previous = map.get(signature) as PolynomialTerm;
@@ -237,7 +237,7 @@ export class PolynomialUtils {
 			}
 		});
 
-		return this.removeZeroPowers({
+		return this.RemoveZeroPowers({
 			coefficient: newCoefficient,
 			variables: newVariables,
 			degree: term1.degree + term2.degree,
@@ -281,12 +281,12 @@ export class PolynomialUtils {
 		return poly.terms.find(term => term.degree === poly.degree)!;
 	}
 
-	static toMonic(poly: Polynomial) {
+	static ToMonic(poly: Polynomial) {
 		if(this.IsZero(poly)) return poly;
 
 		const lead = poly.leadingCoefficient;
 
-		return PolynomialAnalyzer.createPolynomial(
+		return PolynomialAnalyzer.CreatePolynomial(
 			poly.terms.map(term => ({
 				...term,
 				coefficient: Nodes.Divide(term.coefficient, lead),
@@ -294,9 +294,9 @@ export class PolynomialUtils {
 		);
 	}
 
-	static removeZeroPowers<T extends Polynomial | PolynomialTerm>(poly: T): T {
+	static RemoveZeroPowers<T extends Polynomial | PolynomialTerm>(poly: T): T {
 		if("terms" in poly) {
-			return PolynomialAnalyzer.createPolynomial(poly.terms.map(term => this.removeZeroPowers(term))) as T;
+			return PolynomialAnalyzer.CreatePolynomial(poly.terms.map(term => this.RemoveZeroPowers(term))) as T;
 		} else {
 			const newVariables = new Map<string, number>();
 			poly.variables.forEach((power, variable) => {

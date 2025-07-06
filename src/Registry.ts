@@ -9,7 +9,7 @@ export class Registry {
 	constants: { [key: string]: Node } = {};
 
 
-	addVariables(...variables: ([string, Node] | string)[]) {
+	AddVariables(...variables: ([string, Node] | string)[]) {
 		variables.forEach((variable) => {
 			if(typeIs(variable, "string")) {
 				this.variables[variable] = Nodes.Zero();
@@ -19,15 +19,15 @@ export class Registry {
 		});
 	}
 
-	addPostProcessorFunctions(...functions: { names: string[], converter: (input: Node[]) => Node }[]) {
+	AddPostProcessorFunctions(...functions: { names: string[], converter: (input: Node[]) => Node }[]) {
 		functions.forEach(func => this.postProcessorFunctions.push(func));
 	}
 
-	addFunctions(...functions: Function[]) {
+	AddFunctions(...functions: Function[]) {
 		functions.forEach(func => this.functions.push(func));
 	}
 
-	addConstants(...constants: [string, Node][]) {
+	AddConstants(...constants: [string, Node][]) {
 		constants.forEach((constant) => {
 			this.constants[constant[0]] = constant[1];
 		});

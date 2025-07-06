@@ -19,16 +19,16 @@ export class PatternMatcher {
 		this.expander = new PatternExpander();
 	}
 
-	applyRuleWithPartialMatch(node: Node, rule: SimplificationRule): Node | undefined {
+	ApplyRuleWithPartialMatch(node: Node, rule: SimplificationRule): Node | undefined {
 		const expandedPatterns = this.expander.expand(rule.pattern);
 
 		for(const pattern of expandedPatterns) {
-			let result = this.matchPattern(node, pattern);
+			let result = this.MatchPattern(node, pattern);
 
 			if(!result.matched && (node.type === NodeType.Add || node.type === NodeType.Multiply)) {
-				result = this.findPartialMatches(node, pattern);
+				result = this.FindPartialMatches(node, pattern);
 			} else if("args" in node) {
-				result.matchedIndices = this.getIndicesArray(node.args.size());
+				result.matchedIndices = this.GetIndicesArray(node.args.size());
 			}
 
 			if(result.matched && result.specialNodes) {
@@ -40,7 +40,7 @@ export class PatternMatcher {
 					if(rule.node) {
 						return rule.node(node, result.specialNodes);
 					} else if(rule.children && result.matchedIndices) {
-						return this.replaceChildren(node, rule, result.specialNodes, result.matchedIndices);
+						return this.ReplaceChildren(node, rule, result.specialNodes, result.matchedIndices);
 					}
 				}
 			}
@@ -49,14 +49,14 @@ export class PatternMatcher {
 		return undefined;
 	}
 
-	match(node: Node, pattern: Pattern): MatchResult {
+	Match(node: Node, pattern: Pattern): MatchResult {
 		const expandedPatterns = this.expander.expand(pattern);
 
 		for(const pattern of expandedPatterns) {
-			let result = this.matchPattern(node, pattern);
+			let result = this.MatchPattern(node, pattern);
 
 			if(!result.matched && (node.type === NodeType.Add || node.type === NodeType.Multiply)) {
-				result = this.findPartialMatches(node, pattern);
+				result = this.FindPartialMatches(node, pattern);
 			}
 
 			if(result.matched && result.specialNodes) {
@@ -72,17 +72,17 @@ export class PatternMatcher {
 		};
 	}
 
-	private matchPattern(node: Node, pattern: MatchNode): MatchResult {
+	private MatchPattern(node: Node, pattern: MatchNode): MatchResult {
 		const specialNodes: SpecialNodes = {};
 
-		if(this.matchSingleNode(node, pattern, specialNodes)) {
+		if(this.MatchSingleNode(node, pattern, specialNodes)) {
 			return {matched: true, specialNodes};
 		}
 
 		return {matched: false};
 	}
 
-	private matchSingleNode(node: Node, pattern: MatchNode, specialNodes: SpecialNodes) {
+	private MatchSingleNode(node: Node, pattern: MatchNode, specialNodes: SpecialNodes) {
 		if(pattern.specialNode) {
 			if(specialNodes[pattern.specialNode] !== undefined) {
 				if(!NodeUtils.Equal(node, specialNodes[pattern.specialNode])) {
@@ -118,7 +118,7 @@ export class PatternMatcher {
 		}
 
 		if(pattern.args && NodeUtils.HasArgs(node)) {
-			return this.matchArgs(node.args, pattern.args, specialNodes);
+			return this.MatchArgs(node.args, pattern.args, specialNodes);
 		} else if(pattern.args !== undefined && !NodeUtils.HasArgs(node)) {
 			return false;
 		}
@@ -126,13 +126,13 @@ export class PatternMatcher {
 		return true;
 	}
 
-	private matchArgs(nodeArgs: Node[], patternArgs: MatchNode[], specialNodes: SpecialNodes) {
+	private MatchArgs(nodeArgs: Node[], patternArgs: MatchNode[], specialNodes: SpecialNodes) {
 		if(nodeArgs.size() !== patternArgs.size()) {
 			return false;
 		}
 
 		for(let i = 0; i < nodeArgs.size(); i++) {
-			if(!this.matchSingleNode(nodeArgs[i], patternArgs[i], specialNodes)) {
+			if(!this.MatchSingleNode(nodeArgs[i], patternArgs[i], specialNodes)) {
 				return false;
 			}
 		}
@@ -140,7 +140,7 @@ export class PatternMatcher {
 		return true;
 	}
 
-	private findPartialMatches(node: Node, pattern: MatchNode): MatchResult {
+	private FindPartialMatches(node: Node, pattern: MatchNode): MatchResult {
 		if(!NodeUtils.HasArgs(node) || !pattern.args) {
 			return {matched: false};
 		}
@@ -156,14 +156,14 @@ export class PatternMatcher {
 		let specialNodes: SpecialNodes = {};
 		const matchedIndices: number[] = [];
 
-		const combinations = this.generateCombinations(node.args, pattern.args.size());
+		const combinations = this.GenerateCombinations(node.args, pattern.args.size());
 
 		for(const combo of combinations) {
 			const tempSpecialNodes: SpecialNodes = {};
 			let allMatch = true;
 
 			for(let i = 0; i < combo.nodes.size(); i++) {
-				if(!this.matchSingleNode(combo.nodes[i], pattern.args[i], tempSpecialNodes)) {
+				if(!this.MatchSingleNode(combo.nodes[i], pattern.args[i], tempSpecialNodes)) {
 					allMatch = false;
 					break;
 				}
@@ -181,7 +181,7 @@ export class PatternMatcher {
 		return {matched: false};
 	}
 
-	private replaceChildren(node: Node, rule: SimplificationRule, specialNodes: SpecialNodes, matchedIndices: number[]) {
+	private ReplaceChildren(node: Node, rule: SimplificationRule, specialNodes: SpecialNodes, matchedIndices: number[]) {
 		if(!NodeUtils.HasArgs(node) || !rule.children) {
 			return node;
 		}
@@ -202,10 +202,10 @@ export class PatternMatcher {
 		};
 	}
 
-	private generateCombinations(nodes: Node[], count: number) {
+	private GenerateCombinations(nodes: Node[], count: number) {
 		if(count > nodes.size()) return [];
 		if(count === 0) return [{nodes: [], indices: []}];
-		if(count === nodes.size()) return [{nodes: [...nodes], indices: this.getIndicesArray(nodes.size())}];
+		if(count === nodes.size()) return [{nodes: [...nodes], indices: this.GetIndicesArray(nodes.size())}];
 
 		const combinations: Array<{ nodes: Node[], indices: number[] }> = [];
 
@@ -228,7 +228,7 @@ export class PatternMatcher {
 		return combinations;
 	}
 
-	private getIndicesArray(size: number) {
+	private GetIndicesArray(size: number) {
 		const array: number[] = [];
 		for(let i = 0; i < size; i++) {
 			array.push(i);

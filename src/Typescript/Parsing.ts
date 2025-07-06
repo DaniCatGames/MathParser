@@ -48,23 +48,23 @@ export interface GrammarRule {
 }
 
 export interface ParserContext {
-	eat(tokenType?: TokenType, errorMessage?: string): Token;
+	Eat(tokenType?: TokenType, errorMessage?: string): Token;
 
-	peek(): Token;
+	Peek(): Token;
 
-	expression(precedence?: number): Node;
+	Expression(precedence?: number): Node;
 
-	hasMoreTokens(): boolean;
+	HasMoreTokens(): boolean;
 
-	parseList(startType: TokenType, endType: TokenType, separator: TokenType): Node[];
+	ParseList(startType: TokenType, endType: TokenType, separator: TokenType): Node[];
 
-	isFunction(name: string): boolean;
+	IsFunction(name: string): boolean;
 
-	findFunction(name: string): Function | undefined;
+	FindFunction(name: string): Function | undefined;
 
-	isConstant(name: string): boolean;
+	IsConstant(name: string): boolean;
 
-	getPrecedence(token: Token | "unary"): number;
+	GetPrecedence(token: Token | "unary"): number;
 }
 
 export interface BinaryOperator {

@@ -10,13 +10,13 @@ export class Simplifier {
 		this.patternMatcher = matcher || new PatternMatcher();
 	}
 
-	simplify(node: Node, rules: SimplificationRule[]): Node {
-		const simplifiedNode = this.simplifyChildren(node, rules);
+	Simplify(node: Node, rules: SimplificationRule[]): Node {
+		const simplifiedNode = this.SimplifyChildren(node, rules);
 
 		for(const rule of rules) {
-			const result = this.patternMatcher.applyRuleWithPartialMatch(simplifiedNode, rule);
+			const result = this.patternMatcher.ApplyRuleWithPartialMatch(simplifiedNode, rule);
 			if(result) {
-				return this.simplify(result, rules);
+				return this.Simplify(result, rules);
 			}
 		}
 
@@ -27,9 +27,9 @@ export class Simplifier {
 		return simplifiedNode;
 	}
 
-	private simplifyChildren(node: Node, rules: SimplificationRule[]): Node {
+	private SimplifyChildren(node: Node, rules: SimplificationRule[]): Node {
 		if(NodeUtils.HasArgs(node)) {
-			const simplifiedArgs = node.args.map((arg) => this.simplify(arg, rules));
+			const simplifiedArgs = node.args.map((arg) => this.Simplify(arg, rules));
 			return {
 				...node,
 				args: simplifiedArgs,

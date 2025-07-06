@@ -10,61 +10,61 @@ export class PostProcessingPipeline {
 	private phases: Map<string, Phase> = new Map();
 
 	constructor(private registry: Registry) {
-		this.setupDefaultPhases();
+		this.SetupDefaultPhases();
 	}
 
-	private setupDefaultPhases() {
-		this.addPhase({
+	private SetupDefaultPhases() {
+		this.AddPhase({
 			name: "ComplexVariableConverter",
 			visitor: new ComplexVisitor(),
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "FunctionConverter",
 			visitor: new FunctionVisitor(this.registry),
 			runAfter: ["ComplexVariableConverter"],
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "Flattening",
 			visitor: new FlatteningVisitor(),
 			runAfter: ["FunctionConverter"],
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "FunctionValidation",
 			visitor: new FunctionValidator(this.registry),
 			runAfter: ["Flattening"],
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "TensorValidation",
 			visitor: new TensorValidator(),
 			runAfter: ["Flattening"],
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "LeafValidation",
 			visitor: new LeafValidator(this.registry),
 			runAfter: ["Flattening"],
 		});
 
-		this.addPhase({
+		this.AddPhase({
 			name: "OperatorValidation",
 			visitor: new OperatorValidator(),
 			runAfter: ["Flattening"],
 		});
 	}
 
-	addPhase(phase: Phase) {
+	AddPhase(phase: Phase) {
 		this.phases.set(phase.name, phase);
 	}
 
-	removePhase(name: string) {
+	RemovePhase(name: string) {
 		this.phases.delete(name);
 	}
 
-	enablePhase(name: string): void {
+	EnablePhase(name: string): void {
 		const phase = this.phases.get(name);
 		if(phase) {
 			this.phases.set(phase.name, {
@@ -74,7 +74,7 @@ export class PostProcessingPipeline {
 		}
 	}
 
-	disablePhase(name: string): void {
+	DisablePhase(name: string): void {
 		const phase = this.phases.get(name);
 		if(phase) {
 			this.phases.set(phase.name, {
@@ -84,8 +84,8 @@ export class PostProcessingPipeline {
 		}
 	}
 
-	process(node: Node): Node {
-		const ordered = this.getExecutionOrder(arrayFromMap(this.phases));
+	Process(node: Node): Node {
+		const ordered = this.GetExecutionOrder(arrayFromMap(this.phases));
 		let current = node;
 
 		for(const name of ordered) {
@@ -106,7 +106,7 @@ export class PostProcessingPipeline {
 		return current;
 	}
 
-	private getExecutionOrder(phases: Phase[]): string[] {
+	private GetExecutionOrder(phases: Phase[]): string[] {
 		const graph = new Map<string, string[]>();
 		const inDegree = new Map<string, number>();
 

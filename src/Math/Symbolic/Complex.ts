@@ -49,7 +49,7 @@ export class ComplexUtils {
 	}
 
 	static Equal(a: Complex, b: Complex): boolean {
-		return FractionUtils.equal(a.real, b.real) && FractionUtils.equal(a.imaginary, b.imaginary);
+		return FractionUtils.Equal(a.real, b.real) && FractionUtils.Equal(a.imaginary, b.imaginary);
 	}
 
 	static FromNumber(real: number, imaginary: number = 0): Complex {

@@ -13,14 +13,13 @@ import { Nodes, NodeTests } from "../../Node/NodeUtils";
 import { deDuplicate } from "../../Polyfill/Array";
 
 export class PolynomialAnalyzer {
-
-	static analyze(node: Node): PolynomialInfo | undefined {
-		const polynomial = this.parse(node);
+	static Analyze(node: Node): PolynomialInfo | undefined {
+		const polynomial = this.Parse(node);
 		if(!polynomial) return undefined;
 
-		const classification = this.classify(polynomial);
-		const coefficients = this.getCoefficients(polynomial);
-		const structure = this.analyzeStructure(polynomial);
+		const classification = this.Classify(polynomial);
+		const coefficients = this.GetCoefficients(polynomial);
+		const structure = this.AnalyzeStructure(polynomial);
 
 		return {
 			polynomial: polynomial,
@@ -33,32 +32,32 @@ export class PolynomialAnalyzer {
 
 	// Parsing
 
-	static parse(node: Node): Polynomial | undefined {
+	static Parse(node: Node): Polynomial | undefined {
 		if(NodeTests.Add(node)) {
-			return this.parseAdd(node);
+			return this.ParseAdd(node);
 		} else {
-			const term = this.parseTerm(node);
+			const term = this.ParseTerm(node);
 			if(!term) return undefined;
 
-			return this.createPolynomial([term]);
+			return this.CreatePolynomial([term]);
 		}
 	}
 
-	private static parseAdd(node: Add): Polynomial | undefined {
+	private static ParseAdd(node: Add): Polynomial | undefined {
 		if(!node.args) return undefined;
 
 		const terms: PolynomialTerm[] = [];
 
 		for(const arg of node.args) {
-			const term = this.parseTerm(arg);
+			const term = this.ParseTerm(arg);
 			if(!term) return undefined;
 			terms.push(term);
 		}
 
-		return this.createPolynomial(terms);
+		return this.CreatePolynomial(terms);
 	}
 
-	private static parseTerm(node: Node): PolynomialTerm | undefined {
+	private static ParseTerm(node: Node): PolynomialTerm | undefined {
 		if(NodeTests.Variable(node)) {
 			return {
 				coefficient: Nodes.One(),
@@ -72,15 +71,15 @@ export class PolynomialAnalyzer {
 				degree: 0,
 			};
 		} else if(NodeTests.Multiply(node)) {
-			return this.parseMultiply(node);
+			return this.ParseMultiply(node);
 		} else if(NodeTests.Exponentiation(node)) {
-			return this.parseExponentiation(node);
+			return this.ParseExponentiation(node);
 		} else {
 			return undefined;
 		}
 	};
 
-	private static parseMultiply(node: Multiply): PolynomialTerm | undefined {
+	private static ParseMultiply(node: Multiply): PolynomialTerm | undefined {
 		let coefficient: Node = Nodes.One();
 		const variables = new Map<string, number>;
 
@@ -91,7 +90,7 @@ export class PolynomialAnalyzer {
 				const power = variables.get(arg.string) || 0;
 				variables.set(arg.string, power + 1);
 			} else if(NodeTests.Exponentiation(arg)) {
-				const info = this.parseExponentiationInfo(arg);
+				const info = this.ParseExponentiationInfo(arg);
 				if(!info) return undefined;
 
 				const power = variables.get(info.variable) || 0;
@@ -111,8 +110,8 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	private static parseExponentiation(node: Exponentiation): PolynomialTerm | undefined {
-		const info = this.parseExponentiationInfo(node);
+	private static ParseExponentiation(node: Exponentiation): PolynomialTerm | undefined {
+		const info = this.ParseExponentiationInfo(node);
 		if(!info) return undefined;
 
 		const variables = new Map<string, number>();
@@ -125,14 +124,14 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	private static parseExponentiationInfo(node: Exponentiation): { variable: string, power: number } | undefined {
+	private static ParseExponentiationInfo(node: Exponentiation): { variable: string, power: number } | undefined {
 		const base = node.args[0];
 		const exp = node.args[1];
 
 		if(!NodeTests.Variable(base)) return undefined;
 		if(!NodeTests.Literal(exp)) return undefined;
 
-		const power = this.extractInteger(exp);
+		const power = this.ExtractInteger(exp);
 		if(!power) return undefined;
 
 		return {
@@ -141,7 +140,7 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	static createPolynomial(terms: PolynomialTerm[]): Polynomial {
+	static CreatePolynomial(terms: PolynomialTerm[]): Polynomial {
 		const variables = new Set<string>();
 		let maxDegree = 0;
 
@@ -162,20 +161,20 @@ export class PolynomialAnalyzer {
 			degree: maxDegree,
 			leadingCoefficient: leadingCoefficient,
 			constantTerm: constantTerm,
-			isHomogeneous: this.isHomogeneous(terms),
+			isHomogeneous: this.IsHomogeneous(terms),
 			isMonomial: terms.size() === 1,
 			isBinomial: terms.size() === 2,
 			isTrinomial: terms.size() === 3,
 		};
 	}
 
-	static isHomogeneous(terms: PolynomialTerm[]): boolean {
+	static IsHomogeneous(terms: PolynomialTerm[]): boolean {
 		if(terms.size() === 0) return true;
 		const degree = terms[0].degree;
 		return terms.every(term => term.degree === degree);
 	}
 
-	private static extractInteger(node: Literal) {
+	private static ExtractInteger(node: Literal) {
 		if(node.number.imaginary.numerator !== 0 || node.number.real.denominator !== 1) return undefined;
 		const value = node.number.real.numerator;
 
@@ -186,9 +185,9 @@ export class PolynomialAnalyzer {
 
 	// Classification
 
-	static classify(polynomial: Polynomial): PolynomialClassification {
-		const polyType = this.getType(polynomial.degree);
-		const special = this.detectSpecialForms(polynomial);
+	static Classify(polynomial: Polynomial): PolynomialClassification {
+		const polyType = this.GetType(polynomial.degree);
+		const special = this.DetectSpecialForms(polynomial);
 
 		let variables: string[] = [];
 		for(const variable of polynomial.variables) {
@@ -206,7 +205,7 @@ export class PolynomialAnalyzer {
 		};
 	}
 
-	private static getType(degree: number): PolynomialType {
+	private static GetType(degree: number): PolynomialType {
 		switch(degree) {
 			case 0:
 				return PolynomialType.Constant;
@@ -225,7 +224,7 @@ export class PolynomialAnalyzer {
 		}
 	}
 
-	private static detectSpecialForms(polynomial: Polynomial): SpecialForm[] {
+	private static DetectSpecialForms(polynomial: Polynomial): SpecialForm[] {
 		const forms: SpecialForm[] = [];
 
 		if(polynomial.isHomogeneous) forms.push(SpecialForm.Homogeneous);
@@ -240,11 +239,11 @@ export class PolynomialAnalyzer {
 
 	// Coefficients
 
-	static getCoefficient(polynomial: Polynomial, variablePowers: Map<string, number>): Node {
-		const signature = this.powerSignature(variablePowers);
+	static GetCoefficient(polynomial: Polynomial, variablePowers: Map<string, number>): Node {
+		const signature = this.PowerSignature(variablePowers);
 
 		const term = polynomial.terms.find(term =>
-			this.powerSignature(term.variables) === signature,
+			this.PowerSignature(term.variables) === signature,
 		);
 
 		if(term) {
@@ -254,17 +253,17 @@ export class PolynomialAnalyzer {
 		}
 	}
 
-	static getCoefficients(polynomial: Polynomial) {
+	static GetCoefficients(polynomial: Polynomial) {
 		const coefficients = new Map<string, Node>;
 
 		for(const term of polynomial.terms) {
-			coefficients.set(this.powerSignature(term.variables), term.coefficient);
+			coefficients.set(this.PowerSignature(term.variables), term.coefficient);
 		}
 
 		return coefficients;
 	}
 
-	static powerSignature(variables: Map<string, number>) {
+	static PowerSignature(variables: Map<string, number>) {
 		const temp = new Map<string, number>();
 		variables.forEach((power, variable) => {
 			temp.set(variable, (temp.get(variable) || 0) + power);
@@ -281,7 +280,7 @@ export class PolynomialAnalyzer {
 
 	// Analyze structure
 
-	static analyzeStructure(polynomial: Polynomial): PolynomialStructure {
+	static AnalyzeStructure(polynomial: Polynomial): PolynomialStructure {
 		const powers = polynomial.terms.map(term => term.degree).sort((a, b) => b > a);
 
 		return {
@@ -291,27 +290,27 @@ export class PolynomialAnalyzer {
 			hasLinearTerm: powers.includes(1),
 			hasQuadraticTerm: powers.includes(2),
 			hasCubicTerm: powers.includes(3),
-			symmetries: this.detectSymmetries(polynomial),
+			symmetries: this.DetectSymmetries(polynomial),
 		};
 	}
 
-	private static detectSymmetries(polynomial: Polynomial): PolynomialSymmetry[] {
+	private static DetectSymmetries(polynomial: Polynomial): PolynomialSymmetry[] {
 		const symmetries: PolynomialSymmetry[] = [];
 
-		if(this.isEvenFunction(polynomial)) symmetries.push(PolynomialSymmetry.Even);
-		if(this.isOddFunction(polynomial)) symmetries.push(PolynomialSymmetry.Odd);
+		if(this.IsEvenFunction(polynomial)) symmetries.push(PolynomialSymmetry.Even);
+		if(this.IsOddFunction(polynomial)) symmetries.push(PolynomialSymmetry.Odd);
 
 		return symmetries;
 	}
 
-	private static isEvenFunction(polynomial: Polynomial): boolean {
+	private static IsEvenFunction(polynomial: Polynomial): boolean {
 		if(polynomial.variables.size() === 1) {
 			return polynomial.terms.every(term => term.degree % 2 === 0);
 		}
 		return false;
 	}
 
-	private static isOddFunction(polynomial: Polynomial): boolean {
+	private static IsOddFunction(polynomial: Polynomial): boolean {
 		if(polynomial.variables.size() === 1) {
 			return polynomial.terms.every(term => term.degree % 2 === 1);
 		}
@@ -321,7 +320,7 @@ export class PolynomialAnalyzer {
 
 	// Misc
 
-	static getTermsOfDegree(polynomial: Polynomial, degree: number): PolynomialTerm[] {
+	static GetTermsOfDegree(polynomial: Polynomial, degree: number): PolynomialTerm[] {
 		return polynomial.terms.filter(term => term.degree === degree);
 	}
 }

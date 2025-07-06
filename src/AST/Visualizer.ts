@@ -17,11 +17,11 @@ export class Visualizer {
 				let LaTeX = "";
 				LaTeX += this.StringFraction(node.number.real, false);
 
-				if(!FractionUtils.isZero(node.number.real) && !FractionUtils.isZero(node.number.imaginary)) LaTeX += "+";
+				if(!FractionUtils.IsZero(node.number.real) && !FractionUtils.IsZero(node.number.imaginary)) LaTeX += "+";
 
 				LaTeX += this.StringFraction(node.number.imaginary, true);
 
-				if(!FractionUtils.isZero(node.number.real) && !FractionUtils.isZero(node.number.imaginary)) LaTeX = `(${LaTeX})`;
+				if(!FractionUtils.IsZero(node.number.real) && !FractionUtils.IsZero(node.number.imaginary)) LaTeX = `(${LaTeX})`;
 
 				return LaTeX;
 			case NodeType.Variable:
@@ -34,7 +34,7 @@ export class Visualizer {
 			case NodeType.List:
 				return `{${node.args.map(arg => this.ToString(arg)).join(", ")}}`;
 			case NodeType.Tensor:
-				if(TensorUtils.isVector(node)) {
+				if(TensorUtils.IsVector(node)) {
 					return `[${node.args.map(arg => this.ToString(arg)).join(", ")}]`;
 				} else {
 					let indexOffset = 1;
@@ -69,9 +69,9 @@ export class Visualizer {
 	}
 
 	private static StringFraction(fraction: Fraction, imaginary: boolean): string {
-		if(FractionUtils.isZero(fraction)) {
+		if(FractionUtils.IsZero(fraction)) {
 			return "";
-		} else if(FractionUtils.isInteger(fraction)) {
+		} else if(FractionUtils.IsInteger(fraction)) {
 			return `${fraction.numerator}${imaginary ? "i" : ""}`;
 		} else {
 			return `${fraction.numerator}/${fraction.denominator}${imaginary ? "i" : ""}`;

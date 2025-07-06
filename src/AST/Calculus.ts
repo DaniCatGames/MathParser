@@ -31,10 +31,10 @@ export function NumericDerivative(node: Node, variable: string, at: number, regi
 
 	const h = 1e-7;
 
-	registry.addVariables([variable, BasicNodes.Literal(at - h)]);
+	registry.AddVariables([variable, BasicNodes.Literal(at - h)]);
 	const left = evaluator.Visit(node);
 
-	registry.addVariables([variable, BasicNodes.Literal(at + h)]);
+	registry.AddVariables([variable, BasicNodes.Literal(at + h)]);
 	const right = evaluator.Visit(node);
 
 	if(currentValue) {

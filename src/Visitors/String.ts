@@ -24,11 +24,11 @@ export class LaTeXVisualizer extends Visitor<string> {
 	}
 
 	VisitLiteral(node: Literal): string {
-		if(FractionUtils.isZero(node.number.real) && FractionUtils.isZero(node.number.imaginary)) {
+		if(FractionUtils.IsZero(node.number.real) && FractionUtils.IsZero(node.number.imaginary)) {
 			return "0";
-		} else if(!FractionUtils.isZero(node.number.real) && FractionUtils.isZero(node.number.imaginary)) {
+		} else if(!FractionUtils.IsZero(node.number.real) && FractionUtils.IsZero(node.number.imaginary)) {
 			return `{${LaTeXFraction(node.number.real, false)}}`;
-		} else if(FractionUtils.isZero(node.number.real) && !FractionUtils.isZero(node.number.imaginary)) {
+		} else if(FractionUtils.IsZero(node.number.real) && !FractionUtils.IsZero(node.number.imaginary)) {
 			return `{${LaTeXFraction(node.number.imaginary, true)}}`;
 		} else {
 			return `{${LaTeXFraction(node.number.real, false)}+${LaTeXFraction(node.number.imaginary, true)}}`;
@@ -80,12 +80,12 @@ export class LaTeXVisualizer extends Visitor<string> {
 			throw new Error(ErrorType.Visualizer, {
 				message: "Visualizer does not support tensors with >2 dimensions",
 			});
-		} else if(TensorUtils.isMatrix(node)) {
+		} else if(TensorUtils.IsMatrix(node)) {
 			let matrix = `{\\begin{bmatrix}`;
 
 			for(let i = 0; i < node.shape[0]; i++) {
 				for(let j = 0; j < node.shape[1]; j++) {
-					const item = TensorUtils.getElement(node, [i, j]);
+					const item = TensorUtils.GetElement(node, [i, j]);
 					if(!item) {
 						throw new Error(ErrorType.Visualizer, {
 							message: "Out of bounds",
@@ -107,7 +107,7 @@ export class LaTeXVisualizer extends Visitor<string> {
 			let vector = `{\\begin{bmatrix}`;
 
 			for(let i = 0; i < node.shape[1]; i++) {
-				const item = TensorUtils.getElement(node, [i, i]);
+				const item = TensorUtils.GetElement(node, [i, i]);
 				if(!item) {
 					throw new Error(ErrorType.Visualizer, {
 						message: "Out of bounds",
@@ -128,9 +128,9 @@ export class LaTeXVisualizer extends Visitor<string> {
 }
 
 function LaTeXFraction(fraction: Fraction, imaginary: boolean): string {
-	if(FractionUtils.isZero(fraction)) {
+	if(FractionUtils.IsZero(fraction)) {
 		return "0";
-	} else if(FractionUtils.isInteger(fraction)) {
+	} else if(FractionUtils.IsInteger(fraction)) {
 		return `${fraction.numerator}${imaginary ? "i" : ""}`;
 	} else {
 		return `\\frac{${fraction.numerator}}{${fraction.denominator}}${imaginary ? "i" : ""}`;

@@ -6,38 +6,38 @@ import { Node } from "../../Typescript/Node";
 import { Nodes } from "../../Node/NodeUtils";
 
 export class PolynomialSolver {
-	private static getCoefficient(polynomial: PolynomialInfo, variable: string, degree: number): Node {
+	private static GetCoefficient(polynomial: PolynomialInfo, variable: string, degree: number): Node {
 		if(degree !== 0) {
-			return PolynomialAnalyzer.getCoefficient(
+			return PolynomialAnalyzer.GetCoefficient(
 				polynomial.polynomial,
-				new Map<string, number>().set(variable, degree)
+				new Map<string, number>().set(variable, degree),
 			);
 		} else {
-			return PolynomialAnalyzer.getCoefficient(
+			return PolynomialAnalyzer.GetCoefficient(
 				polynomial.polynomial,
-				new Map<string, number>()
+				new Map<string, number>(),
 			);
 		}
 	}
 
-	private static getQuadraticCoefficients(polynomial: PolynomialInfo, variable: string) {
+	private static GetQuadraticCoefficients(polynomial: PolynomialInfo, variable: string) {
 		if(polynomial.classification.type !== PolynomialType.Quadratic
 			|| !polynomial.classification.isUnivariate) {
 			return undefined;
 		}
 		return {
-			a: this.getCoefficient(polynomial, variable, 2),
-			b: this.getCoefficient(polynomial, variable, 1),
-			c: this.getCoefficient(polynomial, variable, 0)
+			a: this.GetCoefficient(polynomial, variable, 2),
+			b: this.GetCoefficient(polynomial, variable, 1),
+			c: this.GetCoefficient(polynomial, variable, 0),
 		};
 	}
 
-	static solveQuadratic(polynomial: PolynomialInfo, variable: string): [Node, Node] {
-		const coefficients = this.getQuadraticCoefficients(polynomial, variable);
+	static SolveQuadratic(polynomial: PolynomialInfo, variable: string): [Node, Node] {
+		const coefficients = this.GetQuadraticCoefficients(polynomial, variable);
 		if(!coefficients) {
 			throw new Error(ErrorType.Polynomial, {
 				message: "Polynomial is not a quadratic or univariate",
-				polynomial: polynomial
+				polynomial: polynomial,
 			});
 		}
 
@@ -46,38 +46,38 @@ export class PolynomialSolver {
 			Nodes.Multiply(
 				BasicNodes.Literal(4),
 				coefficients.a,
-				coefficients.c
-			)
+				coefficients.c,
+			),
 		));
 		const negativeB = Nodes.Negative(coefficients.b);
 		const low = Nodes.Multiply(BasicNodes.Literal(2), coefficients.a);
 
 		return [Nodes.Divide(
 			Nodes.Add(negativeB, D),
-			low
+			low,
 		), Nodes.Divide(
 			Nodes.Subtract(negativeB, D),
-			low
+			low,
 		)];
 	}
 
-	private static getLinearCoefficients(polynomial: PolynomialInfo, variable: string) {
+	private static GetLinearCoefficients(polynomial: PolynomialInfo, variable: string) {
 		if(polynomial.classification.type !== PolynomialType.Linear
 			|| !polynomial.classification.isUnivariate) {
 			return undefined;
 		}
 		return {
-			a: this.getCoefficient(polynomial, variable, 1),
-			b: this.getCoefficient(polynomial, variable, 0)
+			a: this.GetCoefficient(polynomial, variable, 1),
+			b: this.GetCoefficient(polynomial, variable, 0),
 		};
 	}
 
-	static solveLinear(polynomial: PolynomialInfo, variable: string): Node {
-		const coefficients = this.getLinearCoefficients(polynomial, variable);
+	static SolveLinear(polynomial: PolynomialInfo, variable: string): Node {
+		const coefficients = this.GetLinearCoefficients(polynomial, variable);
 		if(!coefficients) {
 			throw new Error(ErrorType.Polynomial, {
 				message: "Polynomial is not a linear or univariate",
-				polynomial: polynomial
+				polynomial: polynomial,
 			});
 		}
 

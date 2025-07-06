@@ -67,7 +67,7 @@ export class Evaluator extends Visitor<number> {
 	}
 
 	VisitFactorial(node: Factorial): number {
-		return GammaFunction.gamma(this.Visit(node.args[0]));
+		return GammaFunction.Gamma(this.Visit(node.args[0]));
 	}
 
 	VisitFunction(node: Function): number {

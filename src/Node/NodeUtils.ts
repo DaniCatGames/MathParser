@@ -85,7 +85,7 @@ export class NodeUtils {
 
 		if(literals.size() > 0) {
 			args.push(
-				nodeType === NodeType.Add ? LiteralUtils.addValues(...literals) : LiteralUtils.multiplyValues(...literals),
+				nodeType === NodeType.Add ? LiteralUtils.AddValues(...literals) : LiteralUtils.MultiplyValues(...literals),
 			);
 		}
 

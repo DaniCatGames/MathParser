@@ -36,7 +36,7 @@ export const BasicRules: SimplificationRule[] = [
 		pattern: Add(P(Literal), Q(Literal)),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
 		children: (node, nodes) => {
-			return LiteralUtils.addValues(nodes["P"] as Literal, nodes["Q"] as Literal);
+			return LiteralUtils.AddValues(nodes["P"] as Literal, nodes["Q"] as Literal);
 		},
 	},
 	{   // P * 0 => 0
@@ -55,7 +55,7 @@ export const BasicRules: SimplificationRule[] = [
 		pattern: Multiply(P(Literal), NegativeOne),
 		requiredNodes: [SpecialNode.P],
 		node: (node, nodes) => {
-			return LiteralUtils.multiplyValues(nodes["P"] as Literal, Nodes.NegativeOne());
+			return LiteralUtils.MultiplyValues(nodes["P"] as Literal, Nodes.NegativeOne());
 		},
 	},
 
@@ -63,7 +63,7 @@ export const BasicRules: SimplificationRule[] = [
 		pattern: Multiply(P(Literal), Q(Literal)),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
 		children: (node, nodes) => {
-			return LiteralUtils.multiplyValues(nodes["P"] as Literal, nodes["Q"] as Literal);
+			return LiteralUtils.MultiplyValues(nodes["P"] as Literal, nodes["Q"] as Literal);
 		},
 	},
 

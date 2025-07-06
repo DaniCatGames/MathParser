@@ -48,7 +48,7 @@ export class TensorValidator extends NodeVisitor {
 	}
 
 	VisitTensor(node: Tensor): Node {
-		if(!TensorUtils.validateTensorShape(node.args, node.shape)) {
+		if(!TensorUtils.ValidateTensorShape(node.args, node.shape)) {
 			throw new Error(ErrorType.Parser, {
 				message: "Tensor shape is invalid",
 				node: node,

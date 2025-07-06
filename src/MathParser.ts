@@ -24,19 +24,19 @@ export class MathParser {
 		this.simplifier = new Simplifier();
 		this.evaluator = new Evaluator(this.registry);
 		this.postProcessor = new PostProcessingPipeline(this.registry);
-		this.setupIdentifiers();
+		this.SetupIdentifiers();
 	}
 
-	parse(equation: string): Node | Error {
+	Parse(equation: string): Node | Error {
 		try {
-			const parsed = this.parser.parse(equation);
-			return this.postProcessor.process(parsed);
+			const parsed = this.parser.Parse(equation);
+			return this.postProcessor.Process(parsed);
 		} catch(error) {
 			return error as Error;
 		}
 	}
 
-	evaluate(node: Node): number | Error {
+	Evaluate(node: Node): number | Error {
 		try {
 			return this.evaluator.Visit(node);
 		} catch(error) {
@@ -44,9 +44,9 @@ export class MathParser {
 		}
 	}
 
-	private setupIdentifiers() {
-		this.registry.addFunctions(...MathFunctions);
-		this.registry.addPostProcessorFunctions(...PostProcessorFunctions);
-		this.registry.addConstants(...pairs(ExtendedMath.constants));
+	private SetupIdentifiers() {
+		this.registry.AddFunctions(...MathFunctions);
+		this.registry.AddPostProcessorFunctions(...PostProcessorFunctions);
+		this.registry.AddConstants(...pairs(ExtendedMath.constants));
 	}
 }

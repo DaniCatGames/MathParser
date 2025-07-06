@@ -16,7 +16,7 @@ export class LiteralRule implements GrammarRule {
 	}
 
 	prefix(parser: ParserContext): Node {
-		const token = parser.eat(TokenType.Literal);
+		const token = parser.Eat(TokenType.Literal);
 		const number = tonumber(token.value);
 
 		if(!number) {
@@ -41,9 +41,9 @@ export class ParenthesesRule implements GrammarRule {
 	}
 
 	parsePrefix(parser: ParserContext): Node {
-		parser.eat(TokenType.LeftParenthesis);
-		const expression = parser.expression();
-		parser.eat(TokenType.RightParenthesis);
+		parser.Eat(TokenType.LeftParenthesis);
+		const expression = parser.Expression();
+		parser.Eat(TokenType.RightParenthesis);
 		return expression;
 	}
 }
@@ -62,13 +62,13 @@ export class BinaryOperatorRule implements GrammarRule {
 	}
 
 	mixfix(parser: ParserContext, left: Node): Node {
-		const operator = parser.eat();
+		const operator = parser.Eat();
 		const opInfo = this.operators.find(op => op.tokenType === operator.type)!;
 
 		const precedence = this.operators.find(op => op.tokenType === operator.type)!.precedence;
 		const realPrecedence = opInfo.associativity === Associativity.Right ? precedence - 1 : precedence;
 
-		const right = parser.expression(realPrecedence);
+		const right = parser.Expression(realPrecedence);
 
 		return opInfo.creator(left, right);
 	}
@@ -85,10 +85,10 @@ export class UnaryOperatorRule implements GrammarRule {
 	}
 
 	prefix(parser: ParserContext): Node {
-		const startToken = parser.eat();
+		const startToken = parser.Eat();
 
-		parser.eat(startToken.type);
-		const operand = parser.expression(4); // High precedence for unary
+		parser.Eat(startToken.type);
+		const operand = parser.Expression(4); // High precedence for unary
 
 		if(startToken.type === TokenType.Subtract) {
 			return Nodes.Negative(operand);
@@ -105,14 +105,14 @@ export class FunctionCallRule implements GrammarRule {
 	enabled = true;
 
 	canStartWith(token: Token, parser: ParserContext): boolean {
-		return token.type === TokenType.Identifier && parser.isFunction(token.value);
+		return token.type === TokenType.Identifier && parser.IsFunction(token.value);
 	}
 
 	prefix(parser: ParserContext): Node {
-		const name = parser.eat(TokenType.Identifier);
-		const args = parser.parseList(TokenType.LeftParenthesis, TokenType.RightParenthesis, TokenType.Comma);
+		const name = parser.Eat(TokenType.Identifier);
+		const args = parser.ParseList(TokenType.LeftParenthesis, TokenType.RightParenthesis, TokenType.Comma);
 
-		const func = parser.findFunction(name.value);
+		const func = parser.FindFunction(name.value);
 		if(!func) throw new Error(ErrorType.Parser, {
 			message: `No function found with name: ${name.value}`,
 			token: name,
@@ -138,13 +138,13 @@ export class VariableRule implements GrammarRule {
 	enabled = true;
 
 	canStartWith(token: Token, parser: ParserContext): boolean {
-		return token.type === TokenType.Identifier && !parser.isFunction(token.value);
+		return token.type === TokenType.Identifier && !parser.IsFunction(token.value);
 	}
 
 	prefix(parser: ParserContext): Node {
-		const token = parser.eat(TokenType.Identifier);
+		const token = parser.Eat(TokenType.Identifier);
 
-		if(parser.isConstant(token.value)) {
+		if(parser.IsConstant(token.value)) {
 			return BasicNodes.Constant(token.value);
 		} else {
 			return BasicNodes.Variable(token.value);
@@ -163,8 +163,8 @@ export class TensorRule implements GrammarRule {
 	}
 
 	prefix(parser: ParserContext): Node {
-		const args = parser.parseList(TokenType.LeftSquareBracket, TokenType.RightSquareBracket, TokenType.Comma);
-		const structure = TensorParser.analyzeTensorStructure(args);
+		const args = parser.ParseList(TokenType.LeftSquareBracket, TokenType.RightSquareBracket, TokenType.Comma);
+		const structure = TensorParser.AnalyzeTensorStructure(args);
 		return BasicNodes.Tensor(args, structure.shape);
 	}
 }
@@ -180,7 +180,7 @@ export class ListRule implements GrammarRule {
 	}
 
 	prefix(parser: ParserContext): Node {
-		const args = parser.parseList(TokenType.LeftCurlyBracket, TokenType.RightCurlyBracket, TokenType.Comma);
+		const args = parser.ParseList(TokenType.LeftCurlyBracket, TokenType.RightCurlyBracket, TokenType.Comma);
 		return BasicNodes.List(...args);
 	}
 }
@@ -196,9 +196,9 @@ export class AbsoluteValueRule implements GrammarRule {
 	}
 
 	prefix(parser: ParserContext): Node {
-		parser.eat(TokenType.Absolute);
-		const expression = parser.expression();
-		parser.eat(TokenType.Absolute, "Expected closing absolute value bar");
+		parser.Eat(TokenType.Absolute);
+		const expression = parser.Expression();
+		parser.Eat(TokenType.Absolute, "Expected closing absolute value bar");
 		return BasicNodes.Absolute(expression);
 	}
 }
@@ -218,7 +218,7 @@ export class FactorialRule implements GrammarRule {
 	}
 
 	mixfix(parser: ParserContext, left: Node): Node {
-		parser.eat(TokenType.Factorial);
+		parser.Eat(TokenType.Factorial);
 		return BasicNodes.Factorial(left);
 	}
 }

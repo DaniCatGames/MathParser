@@ -13,9 +13,9 @@ export class GammaFunction {
 	private static readonly g = 7;
 	private static readonly sqrt2pi = math.sqrt(2 * math.pi);
 
-	static gamma(z: number): number {
+	static Gamma(z: number): number {
 		if(z < 0.5) {
-			return math.pi / (math.sin(math.pi * z) * this.gamma(1 - z));
+			return math.pi / (math.sin(math.pi * z) * this.Gamma(1 - z));
 		}
 
 		z -= 1;

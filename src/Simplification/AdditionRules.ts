@@ -24,7 +24,7 @@ export const AdditionRules: SimplificationRule[] = [
 		pattern: Add(P(Literal), Q(Literal)),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
 		children: (node, nodes) => {
-			return LiteralUtils.addValues(nodes["P"] as Literal, nodes["Q"] as Literal);
+			return LiteralUtils.AddValues(nodes["P"] as Literal, nodes["Q"] as Literal);
 		},
 	},
 
