@@ -1,9 +1,9 @@
-import { BaseASTVisitor } from "../../Node/Visitors";
 import { Function, Node, Variable } from "../../Typescript/Node";
 import { Nodes } from "../../Node/NodeUtils";
 import { Registry } from "../../Registry";
+import { NodeVisitor } from "../../Visitors/Base";
 
-export class FunctionVisitor extends BaseASTVisitor {
+export class FunctionVisitor extends NodeVisitor {
 	constructor(private registry: Registry) {
 		super();
 	}
@@ -20,7 +20,7 @@ export class FunctionVisitor extends BaseASTVisitor {
 	}
 }
 
-export class ComplexVisitor extends BaseASTVisitor {
+export class ComplexVisitor extends NodeVisitor {
 	constructor() {
 		super();
 	}

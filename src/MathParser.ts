@@ -2,12 +2,12 @@ import { PatternMatcher } from "./Matching/PatternMatcher";
 import { Parser } from "./Parse/Parser";
 import { Simplifier } from "./Simplification/Simplifier";
 import { Node } from "./Typescript/Node";
-import { Evaluator } from "./AST/Evaluator";
 import { Error } from "./Typescript/Error";
 import { PostProcessingPipeline } from "./Parse/PostProcessor";
 import { Registry } from "./Registry";
 import { MathFunctions, PostProcessorFunctions } from "./Math/Symbolic/MathFunctions";
 import { ExtendedMath } from "./Math/FloatingPoint/ExtendedMath";
+import { Evaluator } from "./Visitors/Number";
 
 export class MathParser {
 	private parser: Parser;

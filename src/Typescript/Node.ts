@@ -96,7 +96,7 @@ export type Node =
 	| Tensor
 	| Constant
 
-export interface ASTVisitor<T = Node> {
+export interface ASTVisitor<T> {
 	Visit(node: Node): T;
 
 	VisitLiteral(node: Literal): T;
@@ -126,7 +126,7 @@ export interface ASTVisitor<T = Node> {
 
 export interface Phase {
 	name: string;
-	visitor: ASTVisitor;
+	visitor: ASTVisitor<Node>;
 	enabled?: boolean;
 	runBefore?: string[];
 	runAfter?: string[];

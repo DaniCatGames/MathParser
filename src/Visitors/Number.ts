@@ -1,7 +1,6 @@
 import {
 	Absolute,
 	Add,
-	ASTVisitor,
 	Constant,
 	Equals,
 	Exponentiation,
@@ -10,47 +9,17 @@ import {
 	List,
 	Literal,
 	Multiply,
-	Node,
-	NodeType,
 	Tensor,
 	Variable,
 } from "../Typescript/Node";
+import { Registry } from "../Registry";
 import { Error, ErrorType } from "../Typescript/Error";
 import { GammaFunction } from "../Math/FloatingPoint/Gamma";
-import { Registry } from "../Registry";
+import { Visitor } from "./Visitor";
 
-
-export class Evaluator implements ASTVisitor<number> {
+export class Evaluator extends Visitor<number> {
 	constructor(private registry: Registry) {
-	}
-
-	Visit(node: Node): number {
-		switch(node.type) {
-			case NodeType.Literal:
-				return this.VisitLiteral(node);
-			case NodeType.Variable:
-				return this.VisitVariable(node);
-			case NodeType.Constant:
-				return this.VisitConstant(node);
-			case NodeType.Add:
-				return this.VisitAdd(node);
-			case NodeType.Multiply:
-				return this.VisitMultiply(node);
-			case NodeType.Exponentiation:
-				return this.VisitExponentiation(node);
-			case NodeType.Absolute:
-				return this.VisitAbsolute(node);
-			case NodeType.Factorial:
-				return this.VisitFactorial(node);
-			case NodeType.Function:
-				return this.VisitFunction(node);
-			case NodeType.Equals:
-				return this.VisitEquals(node);
-			case NodeType.List:
-				return this.VisitList(node);
-			case NodeType.Tensor:
-				return this.VisitTensor(node);
-		}
+		super();
 	}
 
 	VisitLiteral(node: Literal): number {

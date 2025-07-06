@@ -1,10 +1,10 @@
 import { Node, Phase } from "../Typescript/Node";
 import { Error, ErrorType } from "../Typescript/Error";
 import { arrayFromMap } from "../Polyfill/Array";
-import { FlatteningVisitor } from "../Node/Visitors";
 import { Registry } from "../Registry";
 import { ComplexVisitor, FunctionVisitor } from "./Visitors/Converting";
-import { FunctionValidator, LeafValidator, OperatorValidator, TensorValidator } from "./Visitors/Validation";
+import { FunctionValidator, LeafValidator, OperatorValidator, TensorValidator } from "../Visitors/Validation";
+import { FlatteningVisitor } from "../Visitors/Node";
 
 export class PostProcessingPipeline {
 	private phases: Map<string, Phase> = new Map();

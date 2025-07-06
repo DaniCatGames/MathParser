@@ -1,5 +1,4 @@
-import { BaseASTVisitor } from "../../Node/Visitors";
-import { Registry } from "../../Registry";
+import { Registry } from "../Registry";
 import {
 	Absolute,
 	Add,
@@ -12,12 +11,13 @@ import {
 	Node,
 	Tensor,
 	Variable,
-} from "../../Typescript/Node";
-import { Error, ErrorType } from "../../Typescript/Error";
-import { NodeTests } from "../../Node/NodeUtils";
-import { TensorUtils } from "../../Math/Symbolic/Tensor";
+} from "../Typescript/Node";
+import { Error, ErrorType } from "../Typescript/Error";
+import { NodeTests } from "../Node/NodeUtils";
+import { TensorUtils } from "../Math/Symbolic/Tensor";
+import { NodeVisitor } from "./Base";
 
-export class FunctionValidator extends BaseASTVisitor {
+export class FunctionValidator extends NodeVisitor {
 	constructor(private registry: Registry) {
 		super();
 	}
@@ -42,7 +42,7 @@ export class FunctionValidator extends BaseASTVisitor {
 	}
 }
 
-export class TensorValidator extends BaseASTVisitor {
+export class TensorValidator extends NodeVisitor {
 	constructor() {
 		super();
 	}
@@ -59,7 +59,7 @@ export class TensorValidator extends BaseASTVisitor {
 	}
 }
 
-export class LeafValidator extends BaseASTVisitor {
+export class LeafValidator extends NodeVisitor {
 	constructor(private registry: Registry) {
 		super();
 	}
@@ -107,7 +107,7 @@ export class LeafValidator extends BaseASTVisitor {
 	}
 }
 
-export class OperatorValidator extends BaseASTVisitor {
+export class OperatorValidator extends NodeVisitor {
 	constructor() {
 		super();
 	}

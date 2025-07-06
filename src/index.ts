@@ -21,5 +21,5 @@ export { Parser } from "./Parse/Parser";
 export { Simplifier } from "./Simplification/Simplifier";
 export { SimplificationRules } from "./Simplification/SimplificationRules";
 
-export { Evaluator } from "./AST/Evaluator";
 export { MathParser } from "./MathParser";
+export { Evaluator } from "./Visitors/Number";

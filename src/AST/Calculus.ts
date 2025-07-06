@@ -13,13 +13,13 @@ import {
 	Tensor,
 	Variable,
 } from "../Typescript/Node";
-import { ExtraFunctionTypeBecauseOfStupidImports, MathFunctions } from "../Math/Symbolic/MathFunctions";
+import { ExtraFunctionTypeBecauseOfStupidImports } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
 import { Nodes } from "../Node/NodeUtils";
-import { Evaluator } from "./Evaluator";
-import { BaseASTVisitor } from "../Node/Visitors";
 import { Registry } from "../Registry";
+import { Evaluator } from "../Visitors/Number";
+import { NodeVisitor } from "../Visitors/Base";
 
 export function NumericDerivative(node: Node, variable: string, at: number, registry: Registry) {
 	let currentValue: Node | undefined;
@@ -46,10 +46,10 @@ export function NumericDerivative(node: Node, variable: string, at: number, regi
 	return (right - left) / (2 * h);
 }
 
-export class Derivative extends BaseASTVisitor {
+export class Derivative extends NodeVisitor {
 	private variable: string = "x";
 
-	constructor(variable?: string) {
+	constructor(private registry: Registry, variable?: string) {
 		super();
 		if(variable) {
 			this.variable = variable;
@@ -139,7 +139,7 @@ export class Derivative extends BaseASTVisitor {
 
 		let mathFunction: ExtraFunctionTypeBecauseOfStupidImports | undefined;
 
-		mathFunction = MathFunctions.find(fn => fn.names.includes(node.string)); //TODO add custom functions to this check
+		mathFunction = this.registry.functions.find(fn => fn.names.includes(node.string));
 
 		if(!mathFunction) {
 			throw new Error(ErrorType.Derivative, {
