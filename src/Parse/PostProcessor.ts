@@ -1,9 +1,10 @@
-import { Node, Phase } from "../../Typescript/Node";
-import { Error, ErrorType } from "../../Typescript/Error";
-import { arrayFromMap } from "../../Polyfill/Array";
-import { ComplexVisitor, FunctionVisitor, Validator } from "./Visitors";
-import { FlatteningVisitor } from "../../Node/Visitors";
-import { Registry } from "../../Registry";
+import { Node, Phase } from "../Typescript/Node";
+import { Error, ErrorType } from "../Typescript/Error";
+import { arrayFromMap } from "../Polyfill/Array";
+import { FlatteningVisitor } from "../Node/Visitors";
+import { Registry } from "../Registry";
+import { ComplexVisitor, FunctionVisitor } from "./Visitors/Converting";
+import { FunctionValidator, LeafValidator, OperatorValidator, TensorValidator } from "./Visitors/Validation";
 
 export class PostProcessingPipeline {
 	private phases: Map<string, Phase> = new Map();
@@ -31,9 +32,27 @@ export class PostProcessingPipeline {
 		});
 
 		this.addPhase({
-			name: "Validation",
-			visitor: new Validator(this.registry),
-			runAfter: ["FunctionConverter"],
+			name: "FunctionValidation",
+			visitor: new FunctionValidator(this.registry),
+			runAfter: ["Flattening"],
+		});
+
+		this.addPhase({
+			name: "TensorValidation",
+			visitor: new TensorValidator(),
+			runAfter: ["Flattening"],
+		});
+
+		this.addPhase({
+			name: "LeafValidation",
+			visitor: new LeafValidator(this.registry),
+			runAfter: ["Flattening"],
+		});
+
+		this.addPhase({
+			name: "OperatorValidation",
+			visitor: new OperatorValidator(),
+			runAfter: ["Flattening"],
 		});
 	}
 
