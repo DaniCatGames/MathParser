@@ -1,4 +1,4 @@
-import { GrammarRule, ParserContext, Token, TokenType } from "../Typescript/Parsing";
+import { Associativity, BinaryOperator, GrammarRule, ParserContext, Token, TokenType } from "../Typescript/Parsing";
 import { Node } from "../Typescript/Node";
 import { Function } from "../Math/Symbolic/MathFunctions";
 import { Error, ErrorType } from "../Typescript/Error";
@@ -17,16 +17,30 @@ import {
 	VariableRule,
 } from "./Rules";
 import { Registry } from "../Registry";
+import { Nodes } from "../Node/NodeUtils";
 
-const operators = new Map<string, number>([
-	["!", 6],
-	["^", 5],
-	["unary", 4],
-	["*", 3],
-	["/", 3],
-	["+", 2],
-	["-", 2],
-]);
+const operators: BinaryOperator[] = [{
+	tokenType: TokenType.Exponentiation,
+	precedence: 5,
+	creator: (left, right) => Nodes.Exponentiation(left, right),
+	associativity: Associativity.Right,
+}, {
+	tokenType: TokenType.Multiply,
+	precedence: 3,
+	creator: (left, right) => Nodes.Multiply(left, right),
+}, {
+	tokenType: TokenType.Divide,
+	precedence: 3,
+	creator: (left, right) => Nodes.Divide(left, right),
+}, {
+	tokenType: TokenType.Add,
+	precedence: 2,
+	creator: (left, right) => Nodes.Add(left, right),
+}, {
+	tokenType: TokenType.Subtract,
+	precedence: 2,
+	creator: (left, right) => Nodes.Subtract(left, right),
+}];
 
 export class Parser implements ParserContext {
 	private rules: Map<string, GrammarRule> = new Map();
@@ -55,7 +69,7 @@ export class Parser implements ParserContext {
 	private setupDefault() {
 		this.addRule(new LiteralRule());
 		this.addRule(new ParenthesesRule());
-		this.addRule(new BinaryOperatorRule());
+		this.addRule(new BinaryOperatorRule(operators));
 		this.addRule(new UnaryOperatorRule());
 		this.addRule(new FunctionCallRule());
 		this.addRule(new VariableRule());
@@ -196,7 +210,7 @@ export class Parser implements ParserContext {
 	}
 
 	getPrecedence(token: Token | "unary"): number {
-		const precedence = (token === "unary") ? operators.get(token) : operators.get(token.value);
-		return precedence ? precedence : 0;
+		if(token === "unary") return 4;
+		return operators.find(op => op.tokenType === token.type)?.precedence || 0;
 	}
 }

@@ -28,8 +28,8 @@ export interface Token {
 }
 
 export enum Associativity {
-	Left,
-	Right
+	Left = "Left",
+	Right = "Right"
 }
 
 export interface GrammarRule {
@@ -41,8 +41,6 @@ export interface GrammarRule {
 	canStartWith(token: Token, parser: ParserContext): boolean;
 
 	getPrecedence?(token: Token): number;
-
-	getAssociativity?(token: Token): Associativity;
 
 	prefix?(parser: Parser): Node;
 
@@ -67,4 +65,11 @@ export interface ParserContext {
 	isConstant(name: string): boolean;
 
 	getPrecedence(token: Token | "unary"): number;
+}
+
+export interface BinaryOperator {
+	tokenType: TokenType;
+	precedence: number;
+	associativity?: Associativity;
+	creator: (left: Node, right: Node) => Node;
 }

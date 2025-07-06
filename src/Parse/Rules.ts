@@ -1,4 +1,4 @@
-import { Associativity, GrammarRule, ParserContext, Token, TokenType } from "../Typescript/Parsing";
+import { Associativity, BinaryOperator, GrammarRule, ParserContext, Token, TokenType } from "../Typescript/Parsing";
 import { Node } from "../Typescript/Node";
 import { Error, ErrorType } from "../Typescript/Error";
 import { BasicNodes } from "../Node/BasicNodes";
@@ -54,38 +54,23 @@ export class BinaryOperatorRule implements GrammarRule {
 	description = "Parses binary operators";
 	enabled = true;
 
-	private nodeCreators = new Map<TokenType, (left: Node, right: Node) => Node>([
-		[TokenType.Add, (l, r) => Nodes.Add(l, r)],
-		[TokenType.Subtract, (l, r) => Nodes.Subtract(l, r)],
-		[TokenType.Multiply, (l, r) => Nodes.Multiply(l, r)],
-		[TokenType.Divide, (l, r) => Nodes.Divide(l, r)],
-		[TokenType.Exponentiation, (l, r) => Nodes.Exponentiation(l, r)],
-	]);
-
-	canStartWith(token: Token, parser: ParserContext): boolean {
-		return this.nodeCreators.has(token.type);
+	constructor(private operators: BinaryOperator[]) {
 	}
 
-	getAssociativity(token: Token): Associativity {
-		// x^y = right associative
-		return token.type === TokenType.Exponentiation ? Associativity.Right : Associativity.Left;
+	canStartWith(token: Token, parser: ParserContext): boolean {
+		return this.operators.some(op => op.tokenType === token.type);
 	}
 
 	mixfix(parser: ParserContext, left: Node): Node {
 		const operator = parser.eat();
+		const opInfo = this.operators.find(op => op.tokenType === operator.type)!;
 
-		const precedence = parser.getPrecedence(operator);
-		const realPrecedence = this.getAssociativity(operator) === Associativity.Right ? precedence - 1 : precedence;
+		const precedence = this.operators.find(op => op.tokenType === operator.type)!.precedence;
+		const realPrecedence = opInfo.associativity === Associativity.Right ? precedence - 1 : precedence;
 
 		const right = parser.expression(realPrecedence);
 
-		const creator = this.nodeCreators.get(operator.type);
-		if(!creator) throw new Error(ErrorType.Parser, {
-			message: `No creator for operator: ${operator.value}`,
-			token: operator,
-		});
-
-		return creator(left, right);
+		return opInfo.creator(left, right);
 	}
 }
 
