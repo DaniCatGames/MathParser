@@ -1,225 +1,103 @@
-import { NodeType } from "../Typescript/Node";
-import { DetectionNode, Pattern, SpecialNode } from "../Typescript/Match";
-import { ComplexUtils } from "../Math/Symbolic/Complex";
-
+import {NodeType} from "../Typescript/Node";
+import {DetectionNode, Pattern, SpecialNode} from "../Typescript/Match";
+import {Nodes} from "../Node/NodeUtils";
 
 function specialNode(node: Pattern, special: SpecialNode): Pattern {
-	return node.map(detectionNode => ({...detectionNode, specialNode: special}));
+	return node.map(detectionNode => ({ ...detectionNode, specialNode: special }));
 }
 
-function detectionNode<T extends NodeType>(node: DetectionNode<T>): DetectionNode<T> {
-	return node;
+export class Functions {
+	static Add(...nodes: Pattern[]): DetectionNode<NodeType.Add>[] {
+		return [{
+			type: NodeType.Add,
+			args: nodes,
+			commutative: true,
+		}];
+	}
+
+	static Subtract(node1: Pattern, node2: Pattern): DetectionNode<NodeType.Add>[] {
+		return this.Add(node1, this.Negative(node2));
+	}
+
+	static Multiply(...nodes: Pattern[]): DetectionNode<NodeType.Multiply>[] {
+		return [{
+			type: NodeType.Multiply,
+			args: nodes,
+			commutative: true,
+		}];
+	}
+
+	static Divide(node1: Pattern, node2: Pattern): DetectionNode<NodeType.Multiply>[] {
+		return this.Multiply(node1, this.Exponentiation(node2, Patterns.NegativeOne()));
+	}
+
+	static Exponentiation(node1: Pattern, node2: Pattern): DetectionNode<NodeType.Exponentiation>[] {
+		return [{
+			type: NodeType.Exponentiation,
+			args: [node1, node2],
+			commutative: false,
+		}];
+	}
+
+	static Negative(node: Pattern): DetectionNode<NodeType.Multiply>[] {
+		return this.Multiply(node, Patterns.NegativeOne());
+	}
 }
 
+export class Patterns {
+	static One(): DetectionNode<NodeType.Literal>[] {
+		return [Nodes.One()];
+	}
 
-function Add(...nodes: Pattern[]) {
-	return [detectionNode({
-		type: NodeType.Add,
-		args: nodes,
-		commutative: true,
-	})];
+	static Zero(): DetectionNode<NodeType.Literal>[] {
+		return [Nodes.Zero()];
+	}
+
+	static NegativeOne(): DetectionNode<NodeType.Literal>[] {
+		return [Nodes.NegativeOne()];
+	}
+
+	static Wildcard(): DetectionNode[] {
+		return [{}];
+	}
+
+	static Literal(): DetectionNode<NodeType.Literal>[] {
+		return [{
+			type: NodeType.Literal,
+		}];
+	}
 }
 
-function Subtract(a: Pattern, b: Pattern) {
-	return [detectionNode({
-		type: NodeType.Add,
-		args: [a, Negative(b)],
-		commutative: true,
-	})];
+export class SpecialNodes {
+	static PFunction(node: Pattern) {
+		return specialNode(node, SpecialNode.P);
+	}
+
+	static QFunction(node: Pattern) {
+		return specialNode(node, SpecialNode.Q);
+	}
+
+	static RFunction(node: Pattern) {
+		return specialNode(node, SpecialNode.R);
+	}
+
+	static SFunction(node: Pattern) {
+		return specialNode(node, SpecialNode.S);
+	}
+
+	static P() {
+		return this.PFunction(Patterns.Wildcard());
+	}
+
+	static Q() {
+		return this.QFunction(Patterns.Wildcard());
+	}
+
+	static R() {
+		return this.RFunction(Patterns.Wildcard());
+	}
+
+	static S() {
+		return this.SFunction(Patterns.Wildcard());
+	}
 }
-
-function Multiply(...nodes: Pattern[]) {
-	return [detectionNode({
-		type: NodeType.Multiply,
-		args: nodes,
-		commutative: true,
-	})];
-}
-
-function Divide(a: Pattern, b: Pattern) {
-	return [detectionNode({
-		type: NodeType.Multiply,
-		args: [a, Exponentiation(b, Negative(b))],
-		commutative: true,
-	})];
-}
-
-function Exponentiation(a: Pattern, b: Pattern) {
-	return [detectionNode({
-		type: NodeType.Exponentiation,
-		args: [a, b],
-	})];
-}
-
-function Negative(node: Pattern) {
-	return Multiply(node, NegativeOne);
-}
-
-
-const Variable = [detectionNode({type: NodeType.Variable})];
-
-
-const Zero = [detectionNode({type: NodeType.Literal, number: ComplexUtils.FromNumber(0)})];
-const One = [detectionNode({type: NodeType.Literal, number: ComplexUtils.FromNumber(1)})];
-const NegativeOne = [detectionNode({type: NodeType.Literal, number: ComplexUtils.FromNumber(-1)})];
-
-
-const Integers = [detectionNode({
-	type: NodeType.Literal,
-	conditions: [
-		(node) => (node.number.real.denominator === 1),
-		(node) => ((node.number.real.numerator % 1) === 0),
-		(node) => (node.number.imaginary.denominator === 1),
-		(node) => (node.number.imaginary.numerator === 0),
-	],
-})];
-
-const PositiveIntegers = [detectionNode({
-	...Integers[0],
-	conditions: [...(Integers[0].conditions || []),
-		(node) => (node.number.real.numerator >= 0)],
-})];
-
-const NegativeIntegers = [detectionNode({
-	...Integers[0],
-	conditions: [...(Integers[0].conditions || []),
-		(node) => (node.number.real.numerator < 0)],
-})];
-
-
-const Rationals = [detectionNode({
-	type: NodeType.Literal,
-	conditions: [
-		(node) => node.number.imaginary.numerator === 0,
-		(node) => node.number.imaginary.denominator === 1],
-})];
-
-const PositiveRationals = [detectionNode({
-	...Rationals[0],
-	conditions: [...(Rationals[0].conditions || []),
-		(node) => (node.number.imaginary.numerator >= 0)],
-})];
-
-const NegativeRationals = [detectionNode({
-	...Rationals[0],
-	conditions: [...(Rationals[0].conditions || []),
-		(node) => (node.number.imaginary.numerator < 0)],
-})];
-
-
-const Reals = [detectionNode({
-	type: NodeType.Literal,
-	conditions: [
-		(node) => node.number.imaginary.numerator === 0,
-		(node) => node.number.imaginary.denominator === 1],
-})];
-
-const PositiveReals = [detectionNode({
-	...Reals[0],
-	conditions: [...(Reals[0].conditions || []),
-		(node) => (node.number.real.numerator >= 0)],
-})];
-
-const NegativeReals = [detectionNode({
-	...Reals[0],
-	conditions: [...(Reals[0].conditions || []),
-		(node) => (node.number.real.numerator < 0)],
-})];
-
-
-const Imaginaries = [detectionNode({
-	type: NodeType.Literal,
-	conditions: [
-		(node) => node.number.real.numerator === 0,
-		(node) => node.number.real.denominator === 1,
-		(node) => node.number.imaginary.numerator !== 0],
-})];
-
-const PositiveImaginaries = [detectionNode({
-	...Imaginaries[0],
-	conditions: [...(Imaginaries[0].conditions || []),
-		(node) => (node.number.imaginary.numerator >= 0)],
-})];
-
-const NegativeImaginaries = [detectionNode({
-	...Imaginaries[0],
-	conditions: [...(Imaginaries[0].conditions || []),
-		(node) => (node.number.imaginary.numerator < 0)],
-})];
-
-
-const Complex = [detectionNode({
-	type: NodeType.Literal,
-	conditions: [
-		(node) => node.number.real.numerator !== 0,
-		(node) => node.number.imaginary.numerator !== 0],
-})];
-const AllComplex = [detectionNode({
-	type: NodeType.Literal,
-})];
-
-const Literal = [detectionNode({type: NodeType.Literal})];
-
-
-const Wildcard = [{}];
-
-
-const SpecialNodeFunctions = {
-	P: (node: Pattern) => specialNode(node, SpecialNode.P),
-	Q: (node: Pattern) => specialNode(node, SpecialNode.Q),
-	R: (node: Pattern) => specialNode(node, SpecialNode.R),
-	S: (node: Pattern) => specialNode(node, SpecialNode.S),
-};
-
-const SpecialNodes = {
-	P: SpecialNodeFunctions.P(Wildcard),
-	Q: SpecialNodeFunctions.Q(Wildcard),
-	R: SpecialNodeFunctions.R(Wildcard),
-	S: SpecialNodeFunctions.S(Wildcard),
-};
-
-
-export const PatternFunctions = {
-	Add,
-	Subtract,
-	Multiply,
-	Divide,
-	Exponentiation,
-	Negative,
-
-	P: SpecialNodeFunctions.P,
-	Q: SpecialNodeFunctions.Q,
-	R: SpecialNodeFunctions.R,
-	S: SpecialNodeFunctions.S,
-};
-
-export const Patterns = {
-	Integers,
-	PositiveIntegers,
-	NegativeIntegers,
-
-	Rationals,
-	PositiveRationals,
-	NegativeRationals,
-
-	Reals,
-	PositiveReals,
-	NegativeReals,
-
-	Imaginaries,
-	PositiveImaginaries,
-	NegativeImaginaries,
-
-	Complex,
-	AllComplex,
-
-	Literal,
-
-	Zero,
-	One,
-	NegativeOne,
-	Wildcard,
-	Variable,
-
-	SpecialNodes,
-};

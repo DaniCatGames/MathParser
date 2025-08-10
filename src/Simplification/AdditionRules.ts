@@ -1,45 +1,38 @@
-import { PatternFunctions, Patterns } from "../Matching/Patterns";
-import { SimplificationRule } from "../Typescript/Simplification";
-import { Literal } from "../Typescript/Node";
-import { SpecialNode } from "../Typescript/Match";
-import { LiteralUtils } from "../Node/Literal";
-import { Nodes, NodeUtils } from "../Node/NodeUtils";
+import {SimplificationRule} from "../Typescript/Simplification";
+import {Literal} from "../Typescript/Node";
+import {SpecialNode} from "../Typescript/Match";
+import {LiteralUtils} from "../Node/Literal";
+import {Nodes, NodeUtils} from "../Node/NodeUtils";
+import {Functions, Patterns, SpecialNodes} from "../Matching/Patterns";
 
-const {
-	Add, Multiply, P, Q,
-} = PatternFunctions;
-
-const {
-	Literal, Zero, SpecialNodes,
-} = Patterns;
 
 export const AdditionRules: SimplificationRule[] = [
 	{   // p + 0 => p
-		pattern: Add(SpecialNodes.P, Zero),
+		pattern: Functions.Add(SpecialNodes.P(), Patterns.Wildcard()),
 		requiredNodes: [SpecialNode.P],
-		children: (node, nodes) => nodes["P"],
+		children: (_, nodes) => nodes["P"],
 	},
 
 	{   // R + R => (R + R)
-		pattern: Add(P(Literal), Q(Literal)),
+		pattern: Functions.Add(SpecialNodes.PFunction(Patterns.Literal()), SpecialNodes.QFunction(Patterns.Literal())),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
-		children: (node, nodes) => {
+		children: (_, nodes) => {
 			return LiteralUtils.AddValues(nodes["P"] as Literal, nodes["Q"] as Literal);
 		},
 	},
 
 	{   // qp + p => (q + 1)p
-		pattern: Add(SpecialNodes.P, Multiply(SpecialNodes.Q, SpecialNodes.P)),
+		pattern: Functions.Add(SpecialNodes.P(), Functions.Multiply(SpecialNodes.Q(), SpecialNodes.P())),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q],
-		children: (node, nodes) => {
+		children: (_, nodes) => {
 			return Nodes.Multiply(nodes["P"], NodeUtils.AddOne(nodes["Q"]));
 		},
 	},
 
 	{   // qp + rp => (r + q)p
-		pattern: Add(Multiply(SpecialNodes.Q, SpecialNodes.P), Multiply(SpecialNodes.R, SpecialNodes.P)),
+		pattern: Functions.Add(Functions.Multiply(SpecialNodes.Q(), SpecialNodes.P()), Functions.Multiply(SpecialNodes.R(), SpecialNodes.P())),
 		requiredNodes: [SpecialNode.P, SpecialNode.Q, SpecialNode.R],
-		children: (node, nodes) => {
+		children: (_, nodes) => {
 			return Nodes.Multiply(nodes["P"], Nodes.Add(nodes["Q"], nodes["R"]));
 		},
 	},
